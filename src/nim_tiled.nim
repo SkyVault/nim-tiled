@@ -10,7 +10,7 @@ import
 
 type
     TiledRegion* = object
-        x* , y* , w* , h* : int
+        x, y, width, height : int
 
     TiledOrientation* {.pure.} = enum
         Orthogonal,
@@ -67,8 +67,8 @@ proc `$`* (r: TiledRegion): string=
     result = "TiledRegion {\n"
     result &= "   x: " & $r.x & "\n"
     result &= "   y: " & $r.y & "\n"
-    result &= "   w: " & $r.w & "\n"
-    result &= "   h: " & $r.h & "\n}\n"
+    result &= "   w: " & $r.width & "\n"
+    result &= "   h: " & $r.height & "\n}\n"
 
 # Public properties for the TiledMap
 proc version*       (map: TiledMap): string {.inline.} = map.version
@@ -82,6 +82,7 @@ proc tileheight*    (map: TiledMap): int {.inline.} = map.tileheight
 proc infinite*      (map: TiledMap): bool {.inline.} = map.infinite
 proc tilesets*      (map: TiledMap): seq[TiledTileset] {.inline.} = map.tilesets
 proc layers*        (map: TiledMap): seq[TiledLayer] {.inline.} = map.layers
+proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] {.inline.} = map.objectGroups
 proc regions*       (map: TiledMap): seq[TiledRegion] {.inline.} = map.regions
 
 # Public properties for the TiledLayer
@@ -89,6 +90,9 @@ proc name*    (layer: TiledLayer): string {.inline.}= layer.name
 proc width*   (layer: TiledLayer): int {.inline.}= layer.width
 proc height*  (layer: TiledLayer): int {.inline.}= layer.height
 proc tiles*   (layer: TiledLayer): seq[int] {.inline.}= layer.tiles
+
+# Public properties for the TiledObjectGroup
+proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.}= layer.objects
 
 # Public properties for the TiledTileset
 proc name* (tileset: TiledTileset): string {.inline.}= tileset.name
@@ -100,9 +104,50 @@ proc tilecount* (tileset: TiledTileset): int {.inline.}= tileset.tilecount
 proc columns* (tileset: TiledTileset): int {.inline.}= tileset.columns
 proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.}= tileset.regions
 
-proc newTiledRegion* (x, y, w, h: int): TiledRegion=
+# Public properties for the TiledRegion
+proc x* (r: TiledRegion): auto {.inline.} = r.x
+proc y* (r: TiledRegion): auto {.inline.} = r.y
+proc width* (r: TiledRegion): auto {.inline.} = r.width
+proc height* (r: TiledRegion): auto {.inline.} = r.height
+
+proc `$`* (o: TiledPolygon): auto=
+  result = "TiledPolygon{\n"
+  result &= "   x:" & $o.x & "\n"
+  result &= "   y:" & $o.y & "\n"
+  result &= "   width:" & $o.width & "\n"
+  result &= "   height:" & $o.height & "\n"
+  result &= "   points: ["
+  for p in o.points:
+    result &= fmt"({p[0]},{p[1]}),"
+  result &= "]\n}"
+
+proc `$`* (o: TiledPolyline): auto=
+  result = "TiledPolyline{\n"
+  result &= "   x:" & $o.x & "\n"
+  result &= "   y:" & $o.y & "\n"
+  result &= "   width:" & $o.width & "\n"
+  result &= "   height:" & $o.height & "\n"
+  result &= "   points: ["
+  for p in o.points:
+    result &= fmt"({p[0]},{p[1]}),"
+  result &= "]\n}"
+
+proc `$`* (o: TiledPoint): auto=
+  result = "TiledPoint{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
+
+proc `$`* (o: TiledEllipse): auto=
+  result = "TiledEllipse{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
+
+proc `$`* (o: TiledObject): auto=
+  if o of TiledPoint: return $(o.TiledPoint)
+  if o of TiledEllipse: return $(o.TiledEllipse)
+  if o of TiledPolygon: return $(o.TiledPolygon)
+  if o of TiledPolyline: return $(o.TiledPolyline)
+  result = "TiledObject{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
+
+proc newTiledRegion* (x, y, width, height: int): TiledRegion=
     TiledRegion(
-        x: x, y: y, w: w, h: h
+        x: x, y: y, width: width, height: height
     )
     
 proc loadTileset* (path: string): TiledTileset=
@@ -189,6 +234,9 @@ proc loadTiledMap* (path: string): TiledMap=
             false
         else:
             true
+
+    
+    doAssert(result.infinite == false, "Nim Tiled currently doesn't support infinite maps")
 
     let tileset_xmlnodes = theXml.findAll "tileset"
     for node in tileset_xmlnodes:
