@@ -11,6 +11,7 @@ import
     typeinfo
 
 type
+    TiledColor* = (float, float, float, float)
     TiledRegion* = object
         x, y, width, height : int
 

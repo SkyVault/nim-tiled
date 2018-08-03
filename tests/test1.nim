@@ -12,8 +12,3 @@ doAssert(tiledMap.tileheight == 16)
 
 discard """#00d3a5"""
 
-for objectGroup in tiledMap.objectGroups:
-  for obj in objectGroup.objects:
-    for key, val in obj.properties.pairs:
-      if val.valueType == tvInt:
-        echo val.valueInt
