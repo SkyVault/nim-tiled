@@ -79,7 +79,15 @@
   <object id="3" x="243.5" y="4" width="186" height="159">
    <ellipse/>
   </object>
-  <object id="4" x="76" y="64" width="68" height="67.5"/>
+  <object id="4" x="76" y="64" width="68" height="67.5">
+   <properties>
+    <property name="A Swanky Color" type="color" value="#ff00d3a5"/>
+    <property name="Boolean Boi" type="bool" value="true"/>
+    <property name="Lemon" value="Party"/>
+    <property name="Number Float" type="float" value="3.1415926"/>
+    <property name="Number Int" type="int" value="42"/>
+   </properties>
+  </object>
   <object id="5" x="220" y="-0.5">
    <polygon points="0,0 -11,49 15.5,40.5 44,-0.5 39,-38.5 6.5,-46.5 -39,-38 -62,0.5 -22.5,8 -19,-5 -3.5,-9.5"/>
   </object>

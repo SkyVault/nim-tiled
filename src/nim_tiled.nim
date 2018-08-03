@@ -6,7 +6,9 @@ import
     parseutils,
     strformat,
     os,
-    ospaths
+    tables,
+    ospaths,
+    typeinfo
 
 type
     TiledRegion* = object
@@ -19,8 +21,29 @@ type
     TiledRenderorder* {.pure.} = enum
         RightDown
 
+    TiledValueType* = enum
+      tvInt,
+      tvFloat,
+      tvString,
+      tvColor,
+      tvBool
+
+    TiledValue* = ref object
+      case valueType*: TiledValueType
+          of tvInt:
+            valueInt*: int
+          of tvFloat:
+            valueFloat*: float
+          of tvString:
+            valueString*: string
+          of tvColor:
+            valueColor*: (float, float, float, float)
+          of tvBool:
+            valueBool*: bool
+
     TiledObject* = ref object of RootObj
       x, y, width, height: float
+      properties: TableRef[string, TiledValue]
 
     TiledPolygon* = ref object of TiledObject
       points: seq[(float, float)]
@@ -109,6 +132,13 @@ proc x* (r: TiledRegion): auto {.inline.} = r.x
 proc y* (r: TiledRegion): auto {.inline.} = r.y
 proc width* (r: TiledRegion): auto {.inline.} = r.width
 proc height* (r: TiledRegion): auto {.inline.} = r.height
+
+# Public properties for the TiledObject
+proc x* (r: TiledObject): auto {.inline.} = r.x
+proc y* (r: TiledObject): auto {.inline.} = r.y
+proc width* (r: TiledObject): auto {.inline.} = r.width
+proc height* (r: TiledObject): auto {.inline.} = r.height
+proc properties* (r: TiledObject): auto {.inline.} = r.properties
 
 proc `$`* (o: TiledPolygon): auto=
   result = "TiledPolygon{\n"
@@ -234,7 +264,6 @@ proc loadTiledMap* (path: string): TiledMap=
             false
         else:
             true
-
     
     doAssert(result.infinite == false, "Nim Tiled currently doesn't support infinite maps")
 
@@ -295,20 +324,42 @@ proc loadTiledMap* (path: string): TiledMap=
           except:
             discard
 
-          #echo fmt"x:{x} y:{y} width:{width} height:{height}" 
+          var properties = newTable[string, TiledValue]()
+
+          if objXml.child("properties") != nil:
+            var propertiesXml = objXml.child "properties"
+
+            for propXml in propertiesXml:
+              let theTypeStr = propXml.attr("type")
+
+              var str = propXml.attr("value")
+
+              let name = propXml.attr("name")
+              properties[name] =
+                case theTypeStr:
+                  of "color": TiledValue(valueType: tvColor, valueColor: (1.0, 1.0, 1.0, 1.0))
+                  of "float":
+                    TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
+                  of "int":
+                    TiledValue(valueType: tvInt, valueInt: str.parseInt)
+                  of "bool":
+                    TiledValue(valueType: tvBool, valueBool: str == "true")
+                  else:
+                    TiledValue(valueType: tvString, valueString: str)
 
           var isRect = true
           for subXml in objXml:
-            isRect = false
-
             case subXml.tag:
               of "polygon":
+                isRect = false
+
                 let pointsStr = subXml.attr("points")
                 let splits = pointsStr.split ' '
 
                 var o = TiledPolygon(
                   x: x, y: y, width: width, height: height,
-                  points: newSeq[(float, float)]()
+                  points: newSeq[(float, float)](),
+                  properties: properties
                 )
 
                 for pstr in splits:
@@ -320,12 +371,15 @@ proc loadTiledMap* (path: string): TiledMap=
                 objectGroup.objects.add o
 
               of "polyline":
+                isRect = false
+
                 let pointsStr = subXml.attr("points")
                 let splits = pointsStr.split ' '
 
                 var o = TiledPolyline(
                   x: x, y: y, width: width, height: height,
-                  points: newSeq[(float, float)]()
+                  points: newSeq[(float, float)](),
+                  properties: properties
                 )
 
                 for pstr in splits:
@@ -337,20 +391,30 @@ proc loadTiledMap* (path: string): TiledMap=
                 objectGroup.objects.add o
 
               of "point":
-                objectGroup.objects.add TiledPoint(x: x, y: y, width: 0, height: 0)
+                isRect = false
+
+                var o = TiledPoint(x: x, y: y, width: 0, height: 0, properties: properties)
+                objectGroup.objects.add o
 
               of "ellipse":
-                objectGroup.objects.add TiledEllipse(
+                isRect = false
+
+                var o = TiledEllipse(
                   x: x,
                   y: y,
                   width: width,
-                  height: height)
+                  height: height,
+                  properties: properties)
+                objectGroup.objects.add o
 
+              of "properties": discard
               else:
                 echo fmt"Nim Tiled unsuported object type: {subXml.tag}"
 
           if isRect:
-            objectGroup.objects.add(
-              TiledObject(
-                x: x, y: y, width: width, height: height 
-              ))
+            var o = TiledObject(
+                x: x, y: y, width: width, height: height,
+                properties: properties
+              )
+
+            objectGroup.objects.add(o)
