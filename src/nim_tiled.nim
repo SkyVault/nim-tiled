@@ -159,6 +159,7 @@ proc loadTiledMap* (path: string): TiledMap=
         if theXml.attr("renderorder") == "right-down":
             TiledRenderorder.RightDown
         else:
+            echo "Nim Tiled currently only supports: " & $TiledRenderorder.RightDown & " render order"
             TiledRenderorder.RightDown
         
     result.width = theXml.attr("width").parseInt
@@ -166,8 +167,6 @@ proc loadTiledMap* (path: string): TiledMap=
 
     result.tilewidth = theXml.attr("tilewidth").parseInt
     result.tileheight = theXml.attr("tileheight").parseInt
-
-    # if Coral.assets.regionsExists region_string:
 
     result.infinite =
         if theXml.attr("infinite") == "0":
@@ -211,4 +210,5 @@ proc loadTiledMap* (path: string): TiledMap=
 
     for objectsXml in objects_xmlnodes:
         discard """ TODO: Implement"""
+        #echo objectsXml
         echo "Nim Tiled currently does not support objects"
