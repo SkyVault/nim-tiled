@@ -55,19 +55,35 @@ proc `$`* (r: TiledRegion): string=
     result &= "   w: " & $r.w & "\n"
     result &= "   h: " & $r.h & "\n}\n"
 
-# Public properties
-proc version* (map: TiledMap): string {.inline.} = map.version
-proc tiledversion* (map: TiledMap): string {.inline.} = map.tiledversion
-proc orientation* (map: TiledMap): TiledOrientation{.inline.} = map.orientation
-proc renderorder* (map: TiledMap): TiledRenderorder{.inline.} = map.renderorder
-proc width* (map: TiledMap): int{.inline.} = map.width
-proc height* (map: TiledMap): int{.inline.} = map.height
-proc tilewidth* (map: TiledMap):int{.inline.} = map.tilewidth 
-proc tileheight* (map: TiledMap): int{.inline.} = map.tileheight 
-proc infinite* (map: TiledMap): bool{.inline.} = map.infinite
-proc tilesets* (map: TiledMap): seq[TiledTileset]{.inline.} = map.tilesets
-proc layers* (map: TiledMap): seq[TiledLayer]{.inline.} = map.layers
-proc regions* (map: TiledMap): seq[TiledRegion]{.inline.} = map.regions
+# Public properties for the TiledMap
+proc version*       (map: TiledMap): string {.inline.} = map.version
+proc tiledversion*  (map: TiledMap): string {.inline.} = map.tiledversion
+proc orientation*   (map: TiledMap): TiledOrientation {.inline.} = map.orientation
+proc renderorder*   (map: TiledMap): TiledRenderorder {.inline.} = map.renderorder
+proc width*         (map: TiledMap): int {.inline.} = map.width
+proc height*        (map: TiledMap): int {.inline.} = map.height
+proc tilewidth*     (map: TiledMap): int {.inline.} = map.tilewidth
+proc tileheight*    (map: TiledMap): int {.inline.} = map.tileheight
+proc infinite*      (map: TiledMap): bool {.inline.} = map.infinite
+proc tilesets*      (map: TiledMap): seq[TiledTileset] {.inline.} = map.tilesets
+proc layers*        (map: TiledMap): seq[TiledLayer] {.inline.} = map.layers
+proc regions*       (map: TiledMap): seq[TiledRegion] {.inline.} = map.regions
+
+# Public properties for the TiledLayer
+proc name*    (layer: TiledLayer): string {.inline.}= layer.name
+proc width*   (layer: TiledLayer): int {.inline.}= layer.width
+proc height*  (layer: TiledLayer): int {.inline.}= layer.height
+proc tiles*   (layer: TiledLayer): seq[int] {.inline.}= layer.tiles
+
+# Public properties for the TiledTileset
+proc name* (tileset: TiledTileset): string {.inline.}= tileset.name
+proc tilewidth* (tileset: TiledTileset): int {.inline.}= tileset.tilewidth
+proc tileheight* (tileset: TiledTileset): int {.inline.}= tileset.tileheight
+proc width* (tileset: TiledTileset): int {.inline.}= tileset.width
+proc height* (tileset: TiledTileset): int {.inline.}= tileset.height
+proc tilecount* (tileset: TiledTileset): int {.inline.}= tileset.tilecount
+proc columns* (tileset: TiledTileset): int {.inline.}= tileset.columns
+proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.}= tileset.regions
 
 proc newTiledRegion* (x, y, w, h: int): TiledRegion=
     TiledRegion(
