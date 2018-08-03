@@ -4,6 +4,7 @@ import
     streams,
     strutils,
     parseutils,
+    strformat,
     os,
     ospaths
 
@@ -18,7 +19,13 @@ type
     TiledRenderorder* {.pure.} = enum
         RightDown
 
-    TiledObject* = ref object
+    TiledObject* = ref object of RootObj
+      x, y, width, height: float
+
+    TiledPolygon* = ref object of TiledObject
+    TiledPolyline* = ref object of TiledObject
+    TiledPoint* = ref object of TiledObject
+    TiledEllipse* = ref object of TiledObject
 
     TiledTileset* = ref object
         name: string
@@ -33,6 +40,9 @@ type
         width, height: int
         tiles: seq[int]
 
+    TiledObjectGroup* = ref object
+        objects: seq[TiledObject]
+
     TiledMap* = ref object
         version: string
         tiledversion: string
@@ -45,6 +55,7 @@ type
 
         tilesets: seq[TiledTileset]
         layers: seq[TiledLayer]
+        objectGroups: seq[TiledObjectGroup]
 
         regions: seq[TiledRegion]
 
@@ -139,7 +150,8 @@ proc loadTiledMap* (path: string): TiledMap=
 
     result = TiledMap(
         tilesets: newSeq[TiledTileset](),
-        layers: newSeq[TiledLayer]()
+        layers: newSeq[TiledLayer](),
+        objectGroups: newSeq[TiledObjectGroup]()
     )
 
     let theXml = readFile(path)
@@ -210,5 +222,46 @@ proc loadTiledMap* (path: string): TiledMap=
 
     for objectsXml in objects_xmlnodes:
         discard """ TODO: Implement"""
-        #echo objectsXml
-        echo "Nim Tiled currently does not support objects"
+
+        var objectGroup = TiledObjectGroup(objects: newSeq[TiledObject]())
+        result.objectGroups.add objectGroup
+
+        for objXml in objectsXml:
+          let x = objXml.attr("x").parseFloat
+          let y = objXml.attr("y").parseFloat
+
+          var width = 0.0
+          var height = 0.0
+
+          try:
+            width = objXml.attr("width").parseFloat
+          except:
+            discard
+
+          try:
+            height = objXml.attr("height").parseFloat
+          except:
+            discard
+
+          echo fmt"x:{x} y:{y} width:{width} height:{height}" 
+
+          var isRect = true
+          for subXml in objXml:
+            isRect = false
+
+            case subXml.tag:
+              of "polygon": discard
+              of "polyline": discard
+              of "point": discard
+              of "ellipse": discard
+              else:
+                echo fmt"Nim Tiled unsuported object type: {subXml.tag}"
+
+          if isRect:
+            echo "here!"
+            echo objXml
+
+            objectGroup.objects.add(
+              TiledObject(
+                x: x, y: y, width: width, height: height 
+              ))
