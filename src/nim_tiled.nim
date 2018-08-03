@@ -23,7 +23,11 @@ type
       x, y, width, height: float
 
     TiledPolygon* = ref object of TiledObject
+      points: seq[(float, float)]
+
     TiledPolyline* = ref object of TiledObject
+      points: seq[(float, float)]
+
     TiledPoint* = ref object of TiledObject
     TiledEllipse* = ref object of TiledObject
 
@@ -250,17 +254,46 @@ proc loadTiledMap* (path: string): TiledMap=
             isRect = false
 
             case subXml.tag:
-              of "polygon": discard
-              of "polyline": discard
+              of "polygon":
+                let pointsStr = subXml.attr("points")
+                let splits = pointsStr.split ' '
+
+                var o = TiledPolygon(
+                  x: x, y: y, width: width, height: height,
+                  points: newSeq[(float, float)]()
+                )
+
+                for pstr in splits:
+                   let p = pstr.split(',')
+                   let x = p[0].parseFloat
+                   let y = p[1].parseFloat
+                   o.points.add (x, y)
+
+                objectGroup.objects.add o
+
+              of "polyline":
+                let pointsStr = subXml.attr("points")
+                let splits = pointsStr.split ' '
+
+                var o = TiledPolyline(
+                  x: x, y: y, width: width, height: height,
+                  points: newSeq[(float, float)]()
+                )
+
+                for pstr in splits:
+                   let p = pstr.split(',')
+                   let x = p[0].parseFloat
+                   let y = p[1].parseFloat
+                   o.points.add (x, y)
+
+                objectGroup.objects.add o
+
               of "point": discard
               of "ellipse": discard
               else:
                 echo fmt"Nim Tiled unsuported object type: {subXml.tag}"
 
           if isRect:
-            echo "here!"
-            echo objXml
-
             objectGroup.objects.add(
               TiledObject(
                 x: x, y: y, width: width, height: height 
