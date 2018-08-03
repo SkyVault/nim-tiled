@@ -247,7 +247,7 @@ proc loadTiledMap* (path: string): TiledMap=
           except:
             discard
 
-          echo fmt"x:{x} y:{y} width:{width} height:{height}" 
+          #echo fmt"x:{x} y:{y} width:{width} height:{height}" 
 
           var isRect = true
           for subXml in objXml:
@@ -288,8 +288,16 @@ proc loadTiledMap* (path: string): TiledMap=
 
                 objectGroup.objects.add o
 
-              of "point": discard
-              of "ellipse": discard
+              of "point":
+                objectGroup.objects.add TiledPoint(x: x, y: y, width: 0, height: 0)
+
+              of "ellipse":
+                objectGroup.objects.add TiledEllipse(
+                  x: x,
+                  y: y,
+                  width: width,
+                  height: height)
+
               else:
                 echo fmt"Nim Tiled unsuported object type: {subXml.tag}"
 
