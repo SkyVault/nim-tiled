@@ -11,6 +11,7 @@ import
     typeinfo,
     base64,
     math,
+    terminal,
     nim_tiled/private/zlib
 
 type
@@ -190,10 +191,16 @@ proc `$`* (o: TiledObject): auto=
   if o of TiledPolyline: return $(o.TiledPolyline)
   result = "TiledObject{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
 
+proc assertWarn(expression: bool, msg: string, color = true): bool=
+  result = expression
+  if not expression:
+    if color:
+     styledWriteLine(stdout, fgYellow, "[nim_tiled]::Warning:: ", resetStyle, msg)
+    else:
+      echo fmt"[nim_tiled]::Warning:: {msg}"
+
 proc newTiledRegion* (x, y, width, height: int): TiledRegion=
-    TiledRegion(
-        x: x, y: y, width: width, height: height
-    )
+    TiledRegion(x: x, y: y, width: width, height: height)
     
 proc loadTileset* (path: string): TiledTileset=
     ## This loads a tileset from disk, usually only called from the loadTiledmap 
@@ -201,6 +208,10 @@ proc loadTileset* (path: string): TiledTileset=
     assert(fileExists path, "[ERROR] :: loadTiledMap :: Cannot find tileset: " & path)
 
     result = TiledTileset()
+
+    if not assertWarn(fileExists path, fmt"cannot find tileset: {path}"):
+      return
+
     let theXml = readFile(path)
         .newStringStream()
         .parseXml()
@@ -244,7 +255,8 @@ proc loadTileset* (path: string): TiledTileset=
 
 proc loadTiledMap* (path: string): TiledMap=
     ## Loads a Tiled tmx file into a nim object
-    assert(fileExists path, "[ERROR] :: loadTiledMap :: Cannot find map: " & path)
+    if not assertWarn(fileExists path, fmt"cannot find tiled map: {path}"):
+      return
 
     result = TiledMap(
         tilesets: newSeq[TiledTileset](),
@@ -284,7 +296,8 @@ proc loadTiledMap* (path: string): TiledMap=
         else:
             true
     
-    doAssert(result.infinite == false, "Nim Tiled currently doesn't support infinite maps")
+    if not assertWarn(result.infinite == false, fmt"Nim Tiled currently doesn't support infinite maps"):
+      return
 
     let tileset_xmlnodes = theXml.findAll "tileset"
     for node in tileset_xmlnodes:
