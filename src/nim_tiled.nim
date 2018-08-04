@@ -100,8 +100,6 @@ type
         layers: seq[TiledLayer]
         objectGroups: seq[TiledObjectGroup]
 
-        regions: seq[TiledRegion]
-
 proc `$`* (r: TiledRegion): string=
     result = "TiledRegion {\n"
     result &= "   x: " & $r.x & "\n"
@@ -122,7 +120,6 @@ proc infinite*      (map: TiledMap): bool {.inline.} = map.infinite
 proc tilesets*      (map: TiledMap): seq[TiledTileset] {.inline.} = map.tilesets
 proc layers*        (map: TiledMap): seq[TiledLayer] {.inline.} = map.layers
 proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] {.inline.} = map.objectGroups
-proc regions*       (map: TiledMap): seq[TiledRegion] {.inline.} = map.regions
 
 # Public properties for the TiledLayer
 proc name*    (layer: TiledLayer): string {.inline.}= layer.name
