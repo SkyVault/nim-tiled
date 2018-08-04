@@ -15,16 +15,17 @@ proc writeTiledToText(map: TiledMap): string=
           line[x] = '.'
     result &= line & "\n"
 
-let expected="""........
-..#..#..
-..#..#..
-..#..#..
-#......#
-#......#
-.#....#.
-..####..
+let expected=""".##..##.
+.##..##.
+.##..##.
+.##..##.
+########
+########
+########
+########
 """
 
+doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Csv.tmx")))
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Xml.tmx")))
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Uncompressed.tmx")))
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Gzip.tmx")))

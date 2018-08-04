@@ -2,8 +2,15 @@
 <map version="1.0" tiledversion="2018.07.13" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="1">
  <tileset firstgid="1" source="tileset.tsx"/>
  <layer id="1" name="Tile Layer 1" width="8" height="8">
-  <data encoding="base64" compression="zlib">
-   eJxjYGBgYAFiVgYEQOeLALEoHr4KEKvi4ZsAsSkOPswuXDTMLlw0zC5cNMwuXDQAzY8FWQ==
-  </data>
+  <data encoding="csv">
+0,4,5,0,0,4,5,0,
+0,20,21,0,0,20,21,0,
+0,36,37,0,0,36,37,0,
+0,52,53,0,0,52,53,0,
+4,5,4,5,4,5,4,5,
+20,21,20,21,20,21,20,21,
+36,37,36,37,36,37,36,37,
+52,53,52,53,52,53,52,53
+</data>
  </layer>
 </map>
