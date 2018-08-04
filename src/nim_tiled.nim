@@ -289,13 +289,15 @@ proc loadTiledMap* (path: string): TiledMap=
         layer.tiles = newSeq[int](layer.width * layer.height)
 
         let dataXml = layerXml[0][0]
-        let dataText = dataXml.rawText
-        let dataTextLen = dataText.len
 
-        let encoding = layerXml[0].attr("encoding")
+        var encoding = "xml"
+        if layerXml[0].attr("encoding") != "":
+          encoding = layerXml[0].attr("encoding")
 
         case encoding
         of "csv":
+          let dataText = dataXml.rawText
+          let dataTextLen = dataText.len
           var cursor = 0
           var index = 0
           var token = ""
@@ -306,9 +308,11 @@ proc loadTiledMap* (path: string): TiledMap=
               token.removePrefix()
               layer.tiles[index] = token.parseInt
               index += 1
+
         of "base64":
+          let dataText = dataXml.rawText
           var compression = "none"
-          if layerXml[0].attr("compression") != nil:
+          if layerXml[0].attr("compression") != "":
             compression = layerXml[0].attr("compression")
           
           var decoded = dataText.strip()
@@ -338,8 +342,31 @@ proc loadTiledMap* (path: string): TiledMap=
 
             layer.tiles[i] = int32 num
           
+        of "xml":
+          # XML
+          #let dataText = dataXml.rawText
+          #let dataTextLen = dataText.len
+          #var cursor = 0
+          #var index = 0
+          #var token = ""
+
+          #while cursor < dataTextLen:
+              #cursor += parseUntil(dataText, token, ',', cursor) + 1
+              #token.removeSuffix()
+              #token.removePrefix()
+              #layer.tiles[index] = token.parseInt
+              #index += 1
+
+          var index = 0
+          for tile in layerXml[0]:
+            var gid = 0
+            if tile.attr("gid") != "":
+              gid = tile.attr("gid").parseInt
+            layer.tiles[index] = gid
+            inc index
         else:
-          echo "Nim Tiled does not support the encoding: ", encoding
+          echo "Nim Tiled does not support the encoding type: " & encoding
+          return
 
         result.layers.add(layer)
 
