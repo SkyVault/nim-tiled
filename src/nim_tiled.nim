@@ -10,7 +10,8 @@ import
     ospaths,
     typeinfo,
     base64,
-    math
+    math,
+    zlib
 
 type
     TiledColor* = (float, float, float, float)
@@ -306,8 +307,20 @@ proc loadTiledMap* (path: string): TiledMap=
               layer.tiles[index] = token.parseInt
               index += 1
         of "base64":
+          var compression = "none"
+          if layerXml[0].attr("compression") != nil:
+            compression = layerXml[0].attr("compression")
           
-          let decoded = decode(dataText)
+          var decoded = dataText.strip()
+          decoded = decode(decoded)
+          case compression:
+            of "gzip":
+              decoded = uncompress(decoded, stream=GZIP_STREAM)
+            of "zlib":
+              decoded = uncompress(decoded, stream=ZLIB_STREAM)
+            else:
+              discard
+
           var seqOfChars = newSeq[char](decoded.len)
           var i = 0
           for c in decoded:

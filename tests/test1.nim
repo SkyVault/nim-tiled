@@ -12,17 +12,31 @@ doAssert(tiledMap.tileheight == 16)
 
 discard """#00d3a5"""
 
-var i = open("output.txt", fmWrite)
+proc writeTiledToText(map: TiledMap): string=
+  result = ""
+  for y in 0..<map.height:
+    var line = newString(map.width)
+    for x in 0..<map.width:
+      let index = x + y * map.width
+      for layer in map.layers:
+        if layer.tiles[index] != 0:
+          line[x] = '#'
+        else:
+          line[x] = '.'
+    result &= line & "\n"
 
-for y in 0..<tiledMap.height:
-  var line = newString(tiledMap.width)
-  for x in 0..<tiledMap.width:
-    let index = x + y * tiledMap.width
-    for layer in tiledMap.layers:
-      if layer.tiles[index] != 0:
-        line[x] = '#'
-      else:
-        line[x] = '.'
-  i.writeln(line)
+writeFile("output.txt", writeTiledToText tiledMap)
 
-i.close()
+let text = writeTiledToText(loadTiledMap(getAppDir() & "/8x8.tmx"))
+let expected="""........
+..#..#..
+..#..#..
+..#..#..
+#......#
+#......#
+.#....#.
+..####..
+"""
+echo text
+echo expected
+doAssert(text == expected)
