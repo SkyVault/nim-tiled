@@ -31,7 +31,7 @@ var renderer = sdl.createRenderer(window, -1, sdl.RendererAccelerated or sdl.Ren
 var e: sdl.Event
 
 var tileset = map.tilesets[0]
-var texture = renderer.loadTexture("tileset.png")
+var texture = renderer.loadTexture(tileset.imagePath)
 
 var running = true
 while running:
