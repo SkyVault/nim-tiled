@@ -8,7 +8,9 @@ import
     os,
     tables,
     ospaths,
-    typeinfo
+    typeinfo,
+    base64,
+    math
 
 type
     TiledColor* = (float, float, float, float)
@@ -289,16 +291,42 @@ proc loadTiledMap* (path: string): TiledMap=
         let dataText = dataXml.rawText
         let dataTextLen = dataText.len
 
-        var cursor = 0
-        var index = 0
-        var token = ""
+        let encoding = layerXml[0].attr("encoding")
 
-        while cursor < dataTextLen:
-            cursor += parseUntil(dataText, token, ',', cursor) + 1
-            token.removeSuffix()
-            token.removePrefix()
-            layer.tiles[index] = token.parseInt
-            index += 1
+        case encoding
+        of "csv":
+          var cursor = 0
+          var index = 0
+          var token = ""
+
+          while cursor < dataTextLen:
+              cursor += parseUntil(dataText, token, ',', cursor) + 1
+              token.removeSuffix()
+              token.removePrefix()
+              layer.tiles[index] = token.parseInt
+              index += 1
+        of "base64":
+          
+          let decoded = decode(dataText)
+          var seqOfChars = newSeq[char](decoded.len)
+          var i = 0
+          for c in decoded:
+            seqOfChars[i] = c
+            inc i
+
+          let length = (decoded.len() / sizeof(int32)).int
+
+          for i in 0..<length:
+            let r = int8 seqOfChars[(i*sizeof(int32))+0]
+            let g = int8 seqOfChars[(i*sizeof(int32))+1]
+            let b = int8 seqOfChars[(i*sizeof(int32))+2]
+            let a = int8 seqOfChars[(i*sizeof(int32))+3]
+            var num: int32 = (a shl 24) or (b shl 16) or (g shl 8) or r
+
+            layer.tiles[i] = int32 num
+          
+        else:
+          echo "Nim Tiled does not support the encoding: ", encoding
 
         result.layers.add(layer)
 
