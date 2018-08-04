@@ -14,11 +14,16 @@ import
     nim_tiled/private/zlib
 
 type
-    TiledColor* = (float, float, float, float)
+    ## Color RGBA values range from 0.0 - 1.0
+    TiledColor* =
+      (float, float, float, float)
+
     TiledRegion* = object
+        ## Sprite region for each tile
         x, y, width, height : int
 
     TiledOrientation* {.pure.} = enum
+        ## Tile map orientation
         Orthogonal,
         Orthographic
 
@@ -26,6 +31,7 @@ type
         RightDown
 
     TiledValueType* = enum
+      ## All of the different types that an objects property could be
       tvInt,
       tvFloat,
       tvString,
@@ -33,6 +39,7 @@ type
       tvBool
 
     TiledValue* = ref object
+      ## Value of a property
       case valueType*: TiledValueType
           of tvInt:
             valueInt*: int
@@ -46,6 +53,7 @@ type
             valueBool*: bool
 
     TiledObject* = ref object of RootObj
+      ## An object created by tiled using the shape tools
       x, y, width, height, rotation: float
       properties: TableRef[string, TiledValue]
 
@@ -59,6 +67,8 @@ type
     TiledEllipse* = ref object of TiledObject
 
     TiledTileset* = ref object
+        ## Contains the data for each tile in the sprite sheet
+        ## and the size of each tile and image
         name: string
         tilewidth, tileheight: int
         width, height: int
@@ -67,11 +77,13 @@ type
         regions: seq[TiledRegion]
 
     TiledLayer* = ref object
+        ## Layer in the tile map
         name: string
         width, height: int
         tiles: seq[int]
 
     TiledObjectGroup* = ref object
+        ## Layer for the objects on the map
         objects: seq[TiledObject]
 
     TiledMap* = ref object
@@ -185,6 +197,8 @@ proc newTiledRegion* (x, y, width, height: int): TiledRegion=
     )
     
 proc loadTileset* (path: string): TiledTileset=
+    ## This loads a tileset from disk, usually only called from the loadTiledmap 
+    ## procedure
     assert(fileExists path, "[ERROR] :: loadTiledMap :: Cannot find tileset: " & path)
 
     result = TiledTileset()
@@ -229,6 +243,7 @@ proc loadTileset* (path: string): TiledTileset=
             index += 1
 
 proc loadTiledMap* (path: string): TiledMap=
+    ## Loads a Tiled tmx file into a nim object
     assert(fileExists path, "[ERROR] :: loadTiledMap :: Cannot find map: " & path)
 
     result = TiledMap(

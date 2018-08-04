@@ -1,7 +1,0 @@
-[33m[1m   Warning: [0m[33m[0mPackage 'nim_tiled' has an incorrect structure. The top level of the package source directory should contain at most one module, named 'nim_tiled.nim', but a file named 'zlib.nim' was found. This will be an error in the future.
-[33m[1m      Hint: [0m[33m[0mIf this is the primary source file in the package, rename it to 'nim_tiled.nim'. If it's a source file required by the main module, or if it is one of several modules exposed by 'nim_tiled', then move it into a 'nim_tiled/' subdirectory. If it's a test file or otherwise not required to build the the package 'nim_tiled.nim', prevent its installation by adding `skipFiles = @["zlib.nim"]` to the .nimble file. See https://github.com/nim-lang/nimble#libraries for more info.
-[36m[1m  Executing [0m[36m[0mtask test in /home/dustin/Documents/nim-tiled/nim_tiled.nimble
-[36m[1m  Verifying [0m[36m[0mdependencies for nim_tiled@0.1.0
-[36m[1m  Compiling [0m[36m[0m/home/dustin/Documents/nim-tiled/tests/test1.nim (from package nim_tiled) using c backend
-[32m[1m   Success: [0m[32m[0mExecution finished
-[32m[1m   Success: [0m[32m[0mAll tests passed
