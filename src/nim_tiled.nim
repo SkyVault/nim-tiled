@@ -11,7 +11,7 @@ import
     typeinfo,
     base64,
     math,
-    nim_tiled/zlib
+    nim_tiled/private/zlib
 
 type
     TiledColor* = (float, float, float, float)
