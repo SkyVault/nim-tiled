@@ -16,7 +16,7 @@ doAssert(map.width == 128)
 nimble doc2 src/nim_tiled.nim
 ```
 
-## Example using [SDL2](https://github.com/Vladar4/sdl2_nim/blob/master/examples/ex201_textures.nim)
+## Example using [SDL2](https://github.com/Vladar4/sdl2_nim)
 
 ```nim
 import nim_tiled, sdl2/sdl, sdl2/sdl_image as img
