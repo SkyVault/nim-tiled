@@ -2,11 +2,10 @@
 
 ## Before version 1.1.0
 - [X] Unify warnings and error messages
-- [ ] Save the xml encoding and version number
-- [ ] Save the tiled map version and tiledversion
-- [ ] Save nextlayerid and nextobjectid
+- [X] Embeded tileset support
+- [X] Save the tiled map version and tiledversion
+- [X] Save nextlayerid and nextobjectid
 - [ ] tileset firstgid
-- [ ] Embeded tileset support
 - [ ] Add flags for the loader to print debug messages
 
 ## Before version 1.2.0

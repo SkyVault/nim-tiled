@@ -94,6 +94,8 @@ type
         orientation: TiledOrientation
         renderorder: TiledRenderorder
 
+        nextlayerid, nextobjectid: int
+
         width, height: int
         tilewidth, tileheight: int
         infinite: bool
@@ -297,6 +299,12 @@ proc loadTiledMap* (path: string): TiledMap=
         else:
             echo "Nim Tiled currently only supports: " & $TiledRenderorder.RightDown & " render order"
             TiledRenderorder.RightDown
+
+    if theXml.attr("nextlayerid") != "":
+      result.nextlayerid = theXml.attr("nextlayerid").parseInt
+
+    if theXml.attr("nextobjectid") != "":
+      result.nextobjectid = theXml.attr("nextobjectid").parseInt
         
     result.width = theXml.attr("width").parseInt
     result.height = theXml.attr("height").parseInt
