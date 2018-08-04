@@ -73,6 +73,7 @@ type
         name: string
         imagePath: string
         tilewidth, tileheight: int
+        firstgid: int
         width, height: int
         tilecount: int
         columns: int
@@ -139,6 +140,7 @@ proc name* (tileset: TiledTileset): string {.inline.}= tileset.name
 proc imagePath* (tileset: TiledTileset): string {.inline.}= tileset.imagePath
 proc tilewidth* (tileset: TiledTileset): int {.inline.}= tileset.tilewidth
 proc tileheight* (tileset: TiledTileset): int {.inline.}= tileset.tileheight
+proc firstgid* (tileset: TiledTileset): int {.inline.}= tileset.firstgid
 proc width* (tileset: TiledTileset): int {.inline.}= tileset.width
 proc height* (tileset: TiledTileset): int {.inline.}= tileset.height
 proc tilecount* (tileset: TiledTileset): int {.inline.}= tileset.tilecount
@@ -232,6 +234,9 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
   result.imagePath = theImage.attr("source")
   result.width = width
   result.height = height
+
+  if theXml.attr("firstgid") != "":
+    result.firstgid = theXml.attr("firstgid").parseInt
 
   #TODO: Check the assets manager
   #let region_string = $result.tilewidth & "x" & $result.tileheight
