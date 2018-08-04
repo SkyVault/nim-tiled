@@ -1,9 +1,20 @@
 # Nim Tiled
-Tiled map loader for the Nim programming language
+## Introduction
+
+Tiled map loader for the [Nim](nim-lang.org) programming language. The Tiled editor can be found [here](https://www.mapeditor.org/).
 
 ```nim
 let map = loadTiledMap("tilemap.tmx")
 doAssert(map.width == 128)
 ```
 
-Documentation can be found [here](src/nim_tiled/private/documentation.md)
+## Documentation
+
+​	Generate documentation by running the doc2 command
+
+```bash
+nimble doc2 src/nim_tiled.nim
+```
+
+## Example using SDL2
+
