@@ -2,16 +2,6 @@ import ../src/nim_tiled
 import os
 import tables, typeinfo, base64
 
-let tiledMap = loadTiledMap getAppDir() & "/smile.tmx"
-
-doAssert(tiledMap.tilewidth == 16)
-doAssert(tiledMap.tileheight == 16)
-
-#echo "width: ", tiledMap.width
-#echo "height: ", tiledMap.height
-
-discard """#00d3a5"""
-
 proc writeTiledToText(map: TiledMap): string=
   result = ""
   for y in 0..<map.height:
@@ -25,9 +15,6 @@ proc writeTiledToText(map: TiledMap): string=
           line[x] = '.'
     result &= line & "\n"
 
-writeFile("output.txt", writeTiledToText tiledMap)
-
-let text = writeTiledToText(loadTiledMap(getAppDir() & "/8x8.tmx"))
 let expected="""........
 ..#..#..
 ..#..#..
@@ -37,6 +24,8 @@ let expected="""........
 .#....#.
 ..####..
 """
-echo text
-echo expected
-doAssert(text == expected)
+
+doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Xml.tmx")))
+doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Uncompressed.tmx")))
+doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Gzip.tmx")))
+doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Zlib.tmx")))

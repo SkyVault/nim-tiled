@@ -11,7 +11,7 @@ import
     typeinfo,
     base64,
     math,
-    zlib
+    nim_tiled/zlib
 
 type
     TiledColor* = (float, float, float, float)
@@ -210,8 +210,8 @@ proc loadTileset* (path: string): TiledTileset=
     #let region_string = $result.tilewidth & "x" & $result.tileheight
     # result.regions = newSeq[]
 
-    let imageXml = theXml[0]
-    let tpath = parentDir(path) & "/" & imageXml.attr("source")
+    # let imageXml = theXml[0]
+    # let tpath = parentDir(path) & "/" & imageXml.attr("source")
 
     let num_tiles_w = (width / result.tilewidth).int
     let num_tiles_h = (height / result.tileheight).int
