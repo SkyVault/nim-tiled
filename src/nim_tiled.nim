@@ -46,7 +46,7 @@ type
             valueBool*: bool
 
     TiledObject* = ref object of RootObj
-      x, y, width, height: float
+      x, y, width, height, rotation: float
       properties: TableRef[string, TiledValue]
 
     TiledPolygon* = ref object of TiledObject
@@ -355,16 +355,19 @@ proc loadTiledMap* (path: string): TiledMap=
 
           var width = 0.0
           var height = 0.0
+          var rotation = 0.0
 
           try:
             width = objXml.attr("width").parseFloat
-          except:
-            discard
+          except: discard
 
           try:
             height = objXml.attr("height").parseFloat
-          except:
-            discard
+          except: discard
+
+          try:
+            rotation = objXml.attr("rotation").parseFloat
+          except: discard
 
           var properties = newTable[string, TiledValue]()
 
@@ -400,6 +403,7 @@ proc loadTiledMap* (path: string): TiledMap=
 
                 var o = TiledPolygon(
                   x: x, y: y, width: width, height: height,
+                  rotation: rotation,
                   points: newSeq[(float, float)](),
                   properties: properties
                 )
@@ -420,6 +424,7 @@ proc loadTiledMap* (path: string): TiledMap=
 
                 var o = TiledPolyline(
                   x: x, y: y, width: width, height: height,
+                  rotation: rotation,
                   points: newSeq[(float, float)](),
                   properties: properties
                 )
@@ -435,7 +440,7 @@ proc loadTiledMap* (path: string): TiledMap=
               of "point":
                 isRect = false
 
-                var o = TiledPoint(x: x, y: y, width: 0, height: 0, properties: properties)
+                var o = TiledPoint(x: x, y: y, width: 0, height: 0, rotation: rotation, properties: properties)
                 objectGroup.objects.add o
 
               of "ellipse":
@@ -446,6 +451,7 @@ proc loadTiledMap* (path: string): TiledMap=
                   y: y,
                   width: width,
                   height: height,
+                  rotation: rotation,
                   properties: properties)
                 objectGroup.objects.add o
 
@@ -456,6 +462,7 @@ proc loadTiledMap* (path: string): TiledMap=
           if isRect:
             var o = TiledObject(
                 x: x, y: y, width: width, height: height,
+                rotation: rotation,
                 properties: properties
               )
 
