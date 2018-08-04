@@ -288,7 +288,12 @@ proc loadTiledMap* (path: string): TiledMap=
 
     let tileset_xmlnodes = theXml.findAll "tileset"
     for node in tileset_xmlnodes:
-        let tpath = parentDir(path) & "/" & node.attr("source")
+        let npath = node.attr("source")
+
+        var tpath = npath
+        if parentDir(path) != parentDir(npath):
+          tpath = parentDir(path) & "/" & node.attr("source")
+
         result.tilesets.add loadTileset(tpath)
     
     let layers_xmlnodes = theXml.findAll "layer"
