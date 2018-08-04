@@ -70,6 +70,7 @@ type
         ## Contains the data for each tile in the sprite sheet
         ## and the size of each tile and image
         name: string
+        imagePath: string
         tilewidth, tileheight: int
         width, height: int
         tilecount: int
@@ -132,6 +133,7 @@ proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.}= layer.ob
 
 # Public properties for the TiledTileset
 proc name* (tileset: TiledTileset): string {.inline.}= tileset.name
+proc imagePath* (tileset: TiledTileset): string {.inline.}= tileset.imagePath
 proc tilewidth* (tileset: TiledTileset): int {.inline.}= tileset.tilewidth
 proc tileheight* (tileset: TiledTileset): int {.inline.}= tileset.tileheight
 proc width* (tileset: TiledTileset): int {.inline.}= tileset.width
@@ -214,6 +216,7 @@ proc loadTileset* (path: string): TiledTileset=
     let width = theImage.attr("width").parseInt
     let height = theImage.attr("height").parseInt
 
+    result.imagePath = theImage.attr("source")
     result.width = width
     result.height = height
 
