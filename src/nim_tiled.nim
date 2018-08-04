@@ -191,6 +191,17 @@ proc `$`* (o: TiledObject): auto=
   if o of TiledPolyline: return $(o.TiledPolyline)
   result = "TiledObject{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
 
+proc `$`* (t: TiledTileset): auto=
+  result  = "TiledTileset{\n"
+  result &= "   name:" & t.name & "\n"
+  result &= "   path:" & t.imagePath& "\n"
+  result &= "   tilewidth:" & $t.tilewidth & "\n"
+  result &= "   tileheight:" & $t.tileheight & "\n"
+  result &= "   columns:" & $t.columns & "\n"
+  result &= "   width:" & $t.width & "\n"
+  result &= "   height:" & $t.height & "\n"
+  result &= "}"
+
 proc assertWarn(expression: bool, msg: string, color = true): bool=
   result = expression
   if not expression:
