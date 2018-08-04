@@ -379,10 +379,18 @@ proc loadTiledMap* (path: string): TiledMap=
 
               var str = propXml.attr("value")
 
+              proc hexStringToColor(color_str: string): auto=
+                let without_hash = color_str[1..len(color_str)-1]
+                let a = without_hash[0..1].parseHexInt().float / 255.0
+                let r = without_hash[2..3].parseHexInt().float / 255.0
+                let g = without_hash[4..5].parseHexInt().float / 255.0
+                let b = without_hash[6..7].parseHexInt().float / 255.0
+                result = (r, g, b, a)
+
               let name = propXml.attr("name")
               properties[name] =
                 case theTypeStr:
-                  of "color": TiledValue(valueType: tvColor, valueColor: (1.0, 1.0, 1.0, 1.0))
+                  of "color": TiledValue(valueType: tvColor, valueColor: hexStringToColor(str))
                   of "float":
                     TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
                   of "int":
