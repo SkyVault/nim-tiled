@@ -5,8 +5,7 @@
 - [X] Embeded tileset support
 - [X] Save the tiled map version and tiledversion
 - [X] Save nextlayerid and nextobjectid
-- [ ] tileset firstgid
-- [ ] Add flags for the loader to print debug messages
+- [X] tileset firstgid
 
 ## Before version 1.2.0
 - [ ] Add support for infinite maps
