@@ -201,12 +201,50 @@ proc assertWarn(expression: bool, msg: string, color = true): bool=
 
 proc newTiledRegion* (x, y, width, height: int): TiledRegion=
     TiledRegion(x: x, y: y, width: width, height: height)
+
+proc loadTileset* (theXml: XmlNode): TiledTileset=
+  result = TiledTileset()
+
+  result.name         = theXml.attr "name"
+  result.tilewidth    = theXml.attr("tilewidth").parseInt
+  result.tileheight   = theXml.attr("tileheight").parseInt
+  result.tilecount    = theXml.attr("tilecount").parseInt
+  result.columns      = theXml.attr("columns").parseInt
+
+  let theImage = theXml[0]
+
+  let width = theImage.attr("width").parseInt
+  let height = theImage.attr("height").parseInt
+
+  result.imagePath = theImage.attr("source")
+  result.width = width
+  result.height = height
+
+  #TODO: Check the assets manager
+  #let region_string = $result.tilewidth & "x" & $result.tileheight
+  # result.regions = newSeq[]
+
+  # let imageXml = theXml[0]
+  # let tpath = parentDir(path) & "/" & imageXml.attr("source")
+
+  let num_tiles_w = (width / result.tilewidth).int
+  let num_tiles_h = (height / result.tileheight).int
+  
+  result.regions = newSeq[TiledRegion](num_tiles_w * num_tiles_h)
+  var index = 0
+  for y in 0..<num_tiles_h:
+      for x in 0..<num_tiles_w:
+          result.regions[index] = newTiledRegion(
+              x * result.tilewidth,
+              y * result.tileheight,
+              result.tilewidth,
+              result.tileheight
+          )
+          index += 1
     
 proc loadTileset* (path: string): TiledTileset=
-    ## This loads a tileset from disk, usually only called from the loadTiledmap 
-    ## procedure
-    assert(fileExists path, "[ERROR] :: loadTiledMap :: Cannot find tileset: " & path)
-
+    ## This loads a tileset from disk, usually only called from the
+    ## loadTiledmap procedure
     result = TiledTileset()
 
     if not assertWarn(fileExists path, fmt"cannot find tileset: {path}"):
@@ -215,45 +253,10 @@ proc loadTileset* (path: string): TiledTileset=
     let theXml = readFile(path)
         .newStringStream()
         .parseXml()
-    
-    result.name         = theXml.attr "name"
-    result.tilewidth    = theXml.attr("tilewidth").parseInt
-    result.tileheight   = theXml.attr("tileheight").parseInt
-    result.tilecount    = theXml.attr("tilecount").parseInt
-    result.columns      = theXml.attr("columns").parseInt
 
-    let theImage = theXml[0]
-
-    let width = theImage.attr("width").parseInt
-    let height = theImage.attr("height").parseInt
-
-    result.imagePath = theImage.attr("source")
-    result.width = width
-    result.height = height
-
-    #TODO: Check the assets manager
-    #let region_string = $result.tilewidth & "x" & $result.tileheight
-    # result.regions = newSeq[]
-
-    # let imageXml = theXml[0]
-    # let tpath = parentDir(path) & "/" & imageXml.attr("source")
-
-    let num_tiles_w = (width / result.tilewidth).int
-    let num_tiles_h = (height / result.tileheight).int
-    
-    result.regions = newSeq[TiledRegion](num_tiles_w * num_tiles_h)
-    var index = 0
-    for y in 0..<num_tiles_h:
-        for x in 0..<num_tiles_w:
-            result.regions[index] = newTiledRegion(
-                x * result.tilewidth,
-                y * result.tileheight,
-                result.tilewidth,
-                result.tileheight
-            )
-            index += 1
-
+    result = loadTileset theXml
 proc loadTiledMap* (path: string): TiledMap=
+  
     ## Loads a Tiled tmx file into a nim object
     if not assertWarn(fileExists path, fmt"cannot find tiled map: {path}"):
       return
@@ -303,11 +306,14 @@ proc loadTiledMap* (path: string): TiledMap=
     for node in tileset_xmlnodes:
         let npath = node.attr("source")
 
-        var tpath = npath
-        if parentDir(path) != parentDir(npath):
-          tpath = parentDir(path) & "/" & node.attr("source")
+        if npath == "":
+          result.tilesets.add loadTileset(node)
+        else:
+          var tpath = npath
+          if parentDir(path) != parentDir(npath):
+            tpath = parentDir(path) & "/" & node.attr("source")
 
-        result.tilesets.add loadTileset(tpath)
+          result.tilesets.add loadTileset(tpath)
     
     let layers_xmlnodes = theXml.findAll "layer"
     let objects_xmlnodes = theXml.findAll "objectgroup"
