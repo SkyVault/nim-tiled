@@ -31,3 +31,7 @@ doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Unco
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Gzip.tmx")))
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Zlib.tmx")))
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8ZlibEmbededTilesheet.tmx")))
+
+let map = loadTiledMap(getAppDir() & "/8x8ZlibEmbededTilesheet.tmx")
+
+doAssert(fileExists map.tilesets[0].imagePath)
