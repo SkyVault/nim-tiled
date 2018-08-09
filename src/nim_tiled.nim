@@ -67,6 +67,14 @@ type
     TiledPoint* = ref object of TiledObject
     TiledEllipse* = ref object of TiledObject
 
+    TiledFrame* = object
+      tileid: int
+      duration: int
+
+    TiledTile* = object 
+      tileid: int
+      animation: seq[TiledFrame]
+
     TiledTileset* = ref object
         ## Contains the data for each tile in the sprite sheet
         ## and the size of each tile and image
@@ -78,6 +86,8 @@ type
         tilecount: int
         columns: int
         regions: seq[TiledRegion]
+
+        tiles: TableRef[int, TiledTile]
 
     TiledLayer* = ref object
         ## Layer in the tile map
@@ -146,6 +156,7 @@ proc height* (tileset: TiledTileset): int {.inline.}= tileset.height
 proc tilecount* (tileset: TiledTileset): int {.inline.}= tileset.tilecount
 proc columns* (tileset: TiledTileset): int {.inline.}= tileset.columns
 proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.}= tileset.regions
+proc tiles* (tileset: TiledTileset): auto {.inline.}= tileset.tiles
 
 # Public properties for the TiledRegion
 proc x* (r: TiledRegion): auto {.inline.} = r.x
@@ -159,6 +170,14 @@ proc y* (r: TiledObject): auto {.inline.} = r.y
 proc width* (r: TiledObject): auto {.inline.} = r.width
 proc height* (r: TiledObject): auto {.inline.} = r.height
 proc properties* (r: TiledObject): auto {.inline.} = r.properties
+
+# Tiled Frame properties
+proc tileid* (frame: TiledFrame): auto = frame.tileid
+proc duration* (frame: TiledFrame): auto = frame.duration
+
+# Tiled Tile properties
+proc tileid* (tile: TiledTile): auto = tile.tileid
+proc animation* (tile: TiledTile): auto = tile.animation
 
 proc `$`* (o: TiledPolygon): auto=
   result = "TiledPolygon{\n"
@@ -195,6 +214,17 @@ proc `$`* (o: TiledObject): auto=
   if o of TiledPolyline: return $(o.TiledPolyline)
   result = "TiledObject{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
 
+proc `$`* (f: TiledFrame): auto=
+  result = "TiledFrame{tileid: " & $f.tileid & ", duration: " & $f.duration & "}"
+
+proc `$`* (t: TiledTile): auto=
+  result = "TiledTile{" & "\n"
+  result &= "   tileid:" & $t.tileid & "\n"
+  result &= "   animation: @[" & "\n"
+  for frame in t.animation:
+    result &= "      " & $frame & ",\n"
+  result &= "   ]\n}"
+
 proc `$`* (t: TiledTileset): auto=
   result  = "TiledTileset{\n"
   result &= "   name:" & t.name & "\n"
@@ -218,7 +248,9 @@ proc newTiledRegion* (x, y, width, height: int): TiledRegion=
     TiledRegion(x: x, y: y, width: width, height: height)
 
 proc loadTileset* (theXml: XmlNode): TiledTileset=
-  result = TiledTileset()
+  result = TiledTileset(
+    tiles: newTable[int, TiledTile]()
+  )
 
   result.name         = theXml.attr "name"
   result.tilewidth    = theXml.attr("tilewidth").parseInt
@@ -227,6 +259,25 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
   result.columns      = theXml.attr("columns").parseInt
 
   let theImage = theXml[0]
+
+  # Load tiles in the tileset
+  var first = true
+  for tile in theXml:
+    if first: first = false; continue
+    let tileid = tile.attr("id").parseInt
+    let animation = tile[0]
+
+    var tile = TiledTile(
+      tileid: tileid,
+      animation: @[])
+
+    for frame in animation:
+      var frame = TiledFrame(
+        tileid: frame.attr("tileid").parseInt,
+        duration: frame.attr("duration").parseInt)
+
+      tile.animation.add(frame)
+    result.tiles.add(tileid, tile)
 
   let width = theImage.attr("width").parseInt
   let height = theImage.attr("height").parseInt
@@ -273,6 +324,7 @@ proc loadTileset* (path: string): TiledTileset=
         .parseXml()
 
     result = loadTileset theXml
+
 proc loadTiledMap* (path: string): TiledMap=
   
     ## Loads a Tiled tmx file into a nim object
@@ -334,8 +386,8 @@ proc loadTiledMap* (path: string): TiledMap=
           result.tilesets.add loadTileset(node)
         else:
           var tpath = npath
-          if parentDir(path) != parentDir(npath):
-            tpath = parentDir(path) & "/" & node.attr("source")
+          #if parentDir(path) != parentDir(npath):
+          tpath = parentDir(path) & "/" & node.attr("source")
 
           result.tilesets.add loadTileset(tpath)
     

@@ -1,0 +1,176 @@
+!_TAG_FILE_FORMAT	1
+!_TAG_FILE_SORTED	1
+Allocfunc	./src/nim_tiled/private/zlib.nim	/^  Allocfunc* = proc (p: pointer, items: Uint, size: Uint): pointer{.cdecl.}$/;"	t
+FreeFunc	./src/nim_tiled/private/zlib.nim	/^  FreeFunc* = proc (p: pointer, address: pointer){.cdecl.}$/;"	t
+GzFile	./src/nim_tiled/private/zlib.nim	/^  GzFile* = pointer$/;"	t
+InternalState	./src/nim_tiled/private/zlib.nim	/^  InternalState*{.final, pure.} = object$/;"	t
+MAX_WBITS	./src/nim_tiled/private/zlib.nim	/^  MAX_WBITS* = 15$/;"	v
+PInternalState	./src/nim_tiled/private/zlib.nim	/^  PInternalState* = ptr InternalState$/;"	t
+PZstream	./src/nim_tiled/private/zlib.nim	/^  PZstream* = ptr ZStream$/;"	t
+Pbyte	./src/nim_tiled/private/zlib.nim	/^  Pbyte* = cstring$/;"	t
+Pbytef	./src/nim_tiled/private/zlib.nim	/^  Pbytef* = cstring$/;"	t
+Pulongf	./src/nim_tiled/private/zlib.nim	/^  Pulongf* = ptr Ulongf$/;"	t
+TiledColor	./src/nim_tiled.nim	/^    TiledColor* =$/;"	t
+TiledEllipse	./src/nim_tiled.nim	/^    TiledEllipse* = ref object of TiledObject$/;"	t
+TiledLayer	./src/nim_tiled.nim	/^    TiledLayer* = ref object$/;"	t
+TiledMap	./src/nim_tiled.nim	/^    TiledMap* = ref object$/;"	t
+TiledObject	./src/nim_tiled.nim	/^    TiledObject* = ref object of RootObj$/;"	t
+TiledObjectGroup	./src/nim_tiled.nim	/^    TiledObjectGroup* = ref object$/;"	t
+TiledOrientation	./src/nim_tiled.nim	/^    TiledOrientation* {.pure.} = enum$/;"	t
+TiledPoint	./src/nim_tiled.nim	/^    TiledPoint* = ref object of TiledObject$/;"	t
+TiledPolygon	./src/nim_tiled.nim	/^    TiledPolygon* = ref object of TiledObject$/;"	t
+TiledPolyline	./src/nim_tiled.nim	/^    TiledPolyline* = ref object of TiledObject$/;"	t
+TiledRegion	./src/nim_tiled.nim	/^    TiledRegion* = object$/;"	t
+TiledRenderorder	./src/nim_tiled.nim	/^    TiledRenderorder* {.pure.} = enum$/;"	t
+TiledTileset	./src/nim_tiled.nim	/^    TiledTileset* = ref object$/;"	t
+TiledValue	./src/nim_tiled.nim	/^    TiledValue* = ref object$/;"	t
+TiledValueType	./src/nim_tiled.nim	/^    TiledValueType* = enum$/;"	t
+Uint	./src/nim_tiled/private/zlib.nim	/^  Uint* = int32$/;"	t
+Ulong	./src/nim_tiled/private/zlib.nim	/^  Ulong* = int$/;"	t
+Ulongf	./src/nim_tiled/private/zlib.nim	/^  Ulongf* = int$/;"	t
+ZOffT	./src/nim_tiled/private/zlib.nim	/^  ZOffT* = int32$/;"	t
+ZStream	./src/nim_tiled/private/zlib.nim	/^  ZStream*{.final, pure.} = object$/;"	t
+ZStreamHeader	./src/nim_tiled/private/zlib.nim	/^  ZStreamHeader* = enum$/;"	t
+ZStreamRec	./src/nim_tiled/private/zlib.nim	/^  ZStreamRec* = ZStream$/;"	t
+Z_ASCII	./src/nim_tiled/private/zlib.nim	/^  Z_ASCII* = 1$/;"	v
+Z_BEST_COMPRESSION	./src/nim_tiled/private/zlib.nim	/^  Z_BEST_COMPRESSION* = 9$/;"	v
+Z_BEST_SPEED	./src/nim_tiled/private/zlib.nim	/^  Z_BEST_SPEED* = 1$/;"	v
+Z_BINARY	./src/nim_tiled/private/zlib.nim	/^  Z_BINARY* = 0$/;"	v
+Z_BUF_ERROR	./src/nim_tiled/private/zlib.nim	/^  Z_BUF_ERROR* = -5$/;"	v
+Z_DATA_ERROR	./src/nim_tiled/private/zlib.nim	/^  Z_DATA_ERROR* = -3$/;"	v
+Z_DEFAULT_COMPRESSION	./src/nim_tiled/private/zlib.nim	/^  Z_DEFAULT_COMPRESSION* = -1$/;"	v
+Z_DEFAULT_STRATEGY	./src/nim_tiled/private/zlib.nim	/^  Z_DEFAULT_STRATEGY* = 0$/;"	v
+Z_DEFLATED	./src/nim_tiled/private/zlib.nim	/^  Z_DEFLATED* = 8$/;"	v
+Z_ERRNO	./src/nim_tiled/private/zlib.nim	/^  Z_ERRNO* = -1$/;"	v
+Z_FILTERED	./src/nim_tiled/private/zlib.nim	/^  Z_FILTERED* = 1$/;"	v
+Z_FINISH	./src/nim_tiled/private/zlib.nim	/^  Z_FINISH* = 4$/;"	v
+Z_FULL_FLUSH	./src/nim_tiled/private/zlib.nim	/^  Z_FULL_FLUSH* = 3$/;"	v
+Z_HUFFMAN_ONLY	./src/nim_tiled/private/zlib.nim	/^  Z_HUFFMAN_ONLY* = 2$/;"	v
+Z_MEM_ERROR	./src/nim_tiled/private/zlib.nim	/^  Z_MEM_ERROR* = -4$/;"	v
+Z_MEM_LEVEL	./src/nim_tiled/private/zlib.nim	/^  Z_MEM_LEVEL* = 8$/;"	v
+Z_NEED_DICT	./src/nim_tiled/private/zlib.nim	/^  Z_NEED_DICT* = 2$/;"	v
+Z_NO_COMPRESSION	./src/nim_tiled/private/zlib.nim	/^  Z_NO_COMPRESSION* = 0$/;"	v
+Z_NO_FLUSH	./src/nim_tiled/private/zlib.nim	/^  Z_NO_FLUSH* = 0$/;"	v
+Z_NULL	./src/nim_tiled/private/zlib.nim	/^  Z_NULL* = 0$/;"	v
+Z_OK	./src/nim_tiled/private/zlib.nim	/^  Z_OK* = 0$/;"	v
+Z_PARTIAL_FLUSH	./src/nim_tiled/private/zlib.nim	/^  Z_PARTIAL_FLUSH* = 1$/;"	v
+Z_STREAM_END	./src/nim_tiled/private/zlib.nim	/^  Z_STREAM_END* = 1$/;"	v
+Z_STREAM_ERROR	./src/nim_tiled/private/zlib.nim	/^  Z_STREAM_ERROR* = -2$/;"	v
+Z_SYNC_FLUSH	./src/nim_tiled/private/zlib.nim	/^  Z_SYNC_FLUSH* = 2$/;"	v
+Z_UNKNOWN	./src/nim_tiled/private/zlib.nim	/^  Z_UNKNOWN* = 2$/;"	v
+Z_VERSION_ERROR	./src/nim_tiled/private/zlib.nim	/^  Z_VERSION_ERROR* = -6$/;"	v
+ZlibStreamError	./src/nim_tiled/private/zlib.nim	/^  ZlibStreamError* = object of Exception$/;"	t
+`$`	./src/nim_tiled.nim	/^proc `$`* (o: TiledEllipse): auto=$/;"	f
+`$`	./src/nim_tiled.nim	/^proc `$`* (o: TiledObject): auto=$/;"	f
+`$`	./src/nim_tiled.nim	/^proc `$`* (o: TiledPoint): auto=$/;"	f
+`$`	./src/nim_tiled.nim	/^proc `$`* (o: TiledPolygon): auto=$/;"	f
+`$`	./src/nim_tiled.nim	/^proc `$`* (o: TiledPolyline): auto=$/;"	f
+`$`	./src/nim_tiled.nim	/^proc `$`* (r: TiledRegion): string=$/;"	f
+`$`	./src/nim_tiled.nim	/^proc `$`* (t: TiledTileset): auto=$/;"	f
+adler32	./src/nim_tiled/private/zlib.nim	/^proc adler32*(adler: Ulong, buf: Pbytef, length: Uint): Ulong{.cdecl,$/;"	f
+assertWarn	./src/nim_tiled.nim	/^proc assertWarn(expression: bool, msg: string, color = true): bool=$/;"	f	file:
+columns	./src/nim_tiled.nim	/^proc columns* (tileset: TiledTileset): int {.inline.}= tileset.columns$/;"	f
+compress	./src/nim_tiled/private/zlib.nim	/^proc compress*(dest: Pbytef, destLen: Pulongf, source: Pbytef, sourceLen: Ulong): cint{.$/;"	f
+compress	./src/nim_tiled/private/zlib.nim	/^proc compress*(input: string; level=Z_DEFAULT_COMPRESSION; stream=GZIP_STREAM): string =$/;"	f
+compress	./src/nim_tiled/private/zlib.nim	/^proc compress*(sourceBuf: cstring; sourceLen: int; level=Z_DEFAULT_COMPRESSION; stream=GZIP_STREAM): string =$/;"	f
+compress2	./src/nim_tiled/private/zlib.nim	/^proc compress2*(dest: Pbytef, destLen: Pulongf, source: Pbytef,$/;"	f
+compressBound	./src/nim_tiled/private/zlib.nim	/^proc compressBound*(sourceLen: Ulong): Ulong {.cdecl, dynlib: libz, importc.}$/;"	f
+crc32	./src/nim_tiled/private/zlib.nim	/^proc crc32*(crc: Ulong, buf: Pbytef, length: Uint): Ulong{.cdecl, dynlib: libz,$/;"	f
+deflate	./src/nim_tiled/private/zlib.nim	/^proc deflate*(buffer: var string; level=Z_DEFAULT_COMPRESSION; stream=GZIP_STREAM): bool {.discardable.} =$/;"	f
+deflate	./src/nim_tiled/private/zlib.nim	/^proc deflate*(strm: var ZStream, flush: int32): int32{.cdecl, dynlib: libz,$/;"	f
+deflateBound	./src/nim_tiled/private/zlib.nim	/^proc deflateBound*(strm: var ZStream, sourceLen: ULong): ULong {.cdecl,$/;"	f
+deflateCopy	./src/nim_tiled/private/zlib.nim	/^proc deflateCopy*(dest, source: var ZStream): int32{.cdecl, dynlib: libz,$/;"	f
+deflateEnd	./src/nim_tiled/private/zlib.nim	/^proc deflateEnd*(strm: var ZStream): int32{.cdecl, dynlib: libz,$/;"	f
+deflateInit	./src/nim_tiled/private/zlib.nim	/^proc deflateInit(strm: var ZStream, level: int32): int32 =$/;"	f	file:
+deflateInit	./src/nim_tiled/private/zlib.nim	/^proc deflateInit*(strm: var ZStream, level: int32): int32$/;"	f
+deflateInit2	./src/nim_tiled/private/zlib.nim	/^proc deflateInit2(strm: var ZStream,$/;"	f	file:
+deflateInit2	./src/nim_tiled/private/zlib.nim	/^proc deflateInit2*(strm: var ZStream,$/;"	f
+deflateInit2u	./src/nim_tiled/private/zlib.nim	/^proc deflateInit2u*(strm: var ZStream, level: int32, `method`: int32,$/;"	f
+deflateInitu	./src/nim_tiled/private/zlib.nim	/^proc deflateInitu*(strm: var ZStream, level: int32, version: cstring,$/;"	f
+deflateParams	./src/nim_tiled/private/zlib.nim	/^proc deflateParams*(strm: var ZStream, level: int32, strategy: int32): int32{.$/;"	f
+deflateReset	./src/nim_tiled/private/zlib.nim	/^proc deflateReset*(strm: var ZStream): int32{.cdecl, dynlib: libz,$/;"	f
+deflateSetDictionary	./src/nim_tiled/private/zlib.nim	/^proc deflateSetDictionary*(strm: var ZStream, dictionary: Pbytef,$/;"	f
+expected	./tests/test1.nim	/^let expected=""".##..##.$/;"	v	file:
+firstgid	./src/nim_tiled.nim	/^proc firstgid* (tileset: TiledTileset): int {.inline.}= tileset.firstgid$/;"	f
+getCrcTable	./src/nim_tiled/private/zlib.nim	/^proc getCrcTable*(): pointer{.cdecl, dynlib: libz, importc: "get_crc_table".}$/;"	f
+gzclose	./src/nim_tiled/private/zlib.nim	/^proc gzclose*(thefile: GzFile): int32{.cdecl, dynlib: libz, importc: "gzclose".}$/;"	f
+gzdopen	./src/nim_tiled/private/zlib.nim	/^proc gzdopen*(fd: int32, mode: cstring): GzFile{.cdecl, dynlib: libz,$/;"	f
+gzeof	./src/nim_tiled/private/zlib.nim	/^proc gzeof*(thefile: GzFile): int {.cdecl, dynlib: libz, importc: "gzeof".}$/;"	f
+gzerror	./src/nim_tiled/private/zlib.nim	/^proc gzerror*(thefile: GzFile, errnum: var int32): Pbytef{.cdecl, dynlib: libz,$/;"	f
+gzflush	./src/nim_tiled/private/zlib.nim	/^proc gzflush*(thefile: GzFile, flush: int32): int32{.cdecl, dynlib: libz,$/;"	f
+gzgetc	./src/nim_tiled/private/zlib.nim	/^proc gzgetc*(thefile: GzFile): char{.cdecl, dynlib: libz, importc: "gzgetc".}$/;"	f
+gzgets	./src/nim_tiled/private/zlib.nim	/^proc gzgets*(thefile: GzFile, buf: Pbytef, length: int32): Pbytef{.cdecl,$/;"	f
+gzopen	./src/nim_tiled/private/zlib.nim	/^proc gzopen*(path: cstring, mode: cstring): GzFile{.cdecl, dynlib: libz,$/;"	f
+gzprintf	./src/nim_tiled/private/zlib.nim	/^proc gzprintf*(thefile: GzFile, format: Pbytef): int32{.varargs, cdecl,$/;"	f
+gzputc	./src/nim_tiled/private/zlib.nim	/^proc gzputc*(thefile: GzFile, c: char): char{.cdecl, dynlib: libz,$/;"	f
+gzputs	./src/nim_tiled/private/zlib.nim	/^proc gzputs*(thefile: GzFile, s: Pbytef): int32{.cdecl, dynlib: libz,$/;"	f
+gzread	./src/nim_tiled/private/zlib.nim	/^proc gzread*(thefile: GzFile, buf: pointer, length: int): int32{.cdecl,$/;"	f
+gzrewind	./src/nim_tiled/private/zlib.nim	/^proc gzrewind*(thefile: GzFile): int32{.cdecl, dynlib: libz, importc: "gzrewind".}$/;"	f
+gzseek	./src/nim_tiled/private/zlib.nim	/^proc gzseek*(thefile: GzFile, offset: ZOffT, whence: int32): ZOffT{.cdecl,$/;"	f
+gzsetparams	./src/nim_tiled/private/zlib.nim	/^proc gzsetparams*(thefile: GzFile, level: int32, strategy: int32): int32{.cdecl,$/;"	f
+gztell	./src/nim_tiled/private/zlib.nim	/^proc gztell*(thefile: GzFile): ZOffT{.cdecl, dynlib: libz, importc: "gztell".}$/;"	f
+gzwrite	./src/nim_tiled/private/zlib.nim	/^proc gzwrite*(thefile: GzFile, buf: pointer, length: int): int32{.cdecl,$/;"	f
+height	./src/nim_tiled.nim	/^proc height*        (map: TiledMap): int {.inline.} = map.height$/;"	f
+height	./src/nim_tiled.nim	/^proc height*  (layer: TiledLayer): int {.inline.}= layer.height$/;"	f
+height	./src/nim_tiled.nim	/^proc height* (r: TiledObject): auto {.inline.} = r.height$/;"	f
+height	./src/nim_tiled.nim	/^proc height* (r: TiledRegion): auto {.inline.} = r.height$/;"	f
+height	./src/nim_tiled.nim	/^proc height* (tileset: TiledTileset): int {.inline.}= tileset.height$/;"	f
+imagePath	./src/nim_tiled.nim	/^proc imagePath* (tileset: TiledTileset): string {.inline.}= tileset.imagePath$/;"	f
+infinite	./src/nim_tiled.nim	/^proc infinite*      (map: TiledMap): bool {.inline.} = map.infinite$/;"	f
+inflate	./src/nim_tiled/private/zlib.nim	/^proc inflate*(buffer: var string; stream=DETECT_STREAM): bool {.discardable.} =$/;"	f
+inflate	./src/nim_tiled/private/zlib.nim	/^proc inflate*(strm: var ZStream, flush: int32): int32{.cdecl, dynlib: libz,$/;"	f
+inflateEnd	./src/nim_tiled/private/zlib.nim	/^proc inflateEnd*(strm: var ZStream): int32{.cdecl, dynlib: libz,$/;"	f
+inflateInit	./src/nim_tiled/private/zlib.nim	/^proc inflateInit(strm: var ZStream): int32 =$/;"	f	file:
+inflateInit	./src/nim_tiled/private/zlib.nim	/^proc inflateInit*(strm: var ZStream): int32$/;"	f
+inflateInit2	./src/nim_tiled/private/zlib.nim	/^proc inflateInit2(strm: var ZStream, windowBits: int32): int32 =$/;"	f	file:
+inflateInit2	./src/nim_tiled/private/zlib.nim	/^proc inflateInit2*(strm: var ZStream, windowBits: int32): int32$/;"	f
+inflateInit2u	./src/nim_tiled/private/zlib.nim	/^proc inflateInit2u*(strm: var ZStream, windowBits: int32, version: cstring,$/;"	f
+inflateInitu	./src/nim_tiled/private/zlib.nim	/^proc inflateInitu*(strm: var ZStream, version: cstring,$/;"	f
+inflateReset	./src/nim_tiled/private/zlib.nim	/^proc inflateReset*(strm: var ZStream): int32{.cdecl, dynlib: libz,$/;"	f
+inflateSetDictionary	./src/nim_tiled/private/zlib.nim	/^proc inflateSetDictionary*(strm: var ZStream, dictionary: Pbytef,$/;"	f
+inflateSync	./src/nim_tiled/private/zlib.nim	/^proc inflateSync*(strm: var ZStream): int32{.cdecl, dynlib: libz,$/;"	f
+inflateSyncPoint	./src/nim_tiled/private/zlib.nim	/^proc inflateSyncPoint*(z: PZstream): int32{.cdecl, dynlib: libz,$/;"	f
+layers	./src/nim_tiled.nim	/^proc layers*        (map: TiledMap): seq[TiledLayer] {.inline.} = map.layers$/;"	f
+libz	./src/nim_tiled/private/zlib.nim	/^  const libz = "libz.dylib"$/;"	v	file:
+libz	./src/nim_tiled/private/zlib.nim	/^  const libz = "libz.so.1"$/;"	v	file:
+libz	./src/nim_tiled/private/zlib.nim	/^  const libz = "zlib1.dll"$/;"	v	file:
+loadTiledMap	./src/nim_tiled.nim	/^proc loadTiledMap* (path: string): TiledMap=$/;"	f
+loadTileset	./src/nim_tiled.nim	/^proc loadTileset* (path: string): TiledTileset=$/;"	f
+loadTileset	./src/nim_tiled.nim	/^proc loadTileset* (theXml: XmlNode): TiledTileset=$/;"	f
+map	./tests/test1.nim	/^let map = loadTiledMap(getAppDir() & "\/8x8ZlibEmbededTilesheet.tmx")$/;"	v	file:
+map	./tests/test2.nim	/^let map = loadTiledMap(getAppDir() & "\/8x8Csv.tmx")$/;"	v	file:
+name	./src/nim_tiled.nim	/^proc name*    (layer: TiledLayer): string {.inline.}= layer.name$/;"	f
+name	./src/nim_tiled.nim	/^proc name* (tileset: TiledTileset): string {.inline.}= tileset.name$/;"	f
+newTiledRegion	./src/nim_tiled.nim	/^proc newTiledRegion* (x, y, width, height: int): TiledRegion=$/;"	f
+objectGroups	./src/nim_tiled.nim	/^proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] {.inline.} = map.objectGroups$/;"	f
+objects	./src/nim_tiled.nim	/^proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.}= layer.objects$/;"	f
+orientation	./src/nim_tiled.nim	/^proc orientation*   (map: TiledMap): TiledOrientation {.inline.} = map.orientation$/;"	f
+properties	./src/nim_tiled.nim	/^proc properties* (r: TiledObject): auto {.inline.} = r.properties$/;"	f
+regions	./src/nim_tiled.nim	/^proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.}= tileset.regions$/;"	f
+renderorder	./src/nim_tiled.nim	/^proc renderorder*   (map: TiledMap): TiledRenderorder {.inline.} = map.renderorder$/;"	f
+tilecount	./src/nim_tiled.nim	/^proc tilecount* (tileset: TiledTileset): int {.inline.}= tileset.tilecount$/;"	f
+tiledversion	./src/nim_tiled.nim	/^proc tiledversion*  (map: TiledMap): string {.inline.} = map.tiledversion$/;"	f
+tileheight	./src/nim_tiled.nim	/^proc tileheight*    (map: TiledMap): int {.inline.} = map.tileheight$/;"	f
+tileheight	./src/nim_tiled.nim	/^proc tileheight* (tileset: TiledTileset): int {.inline.}= tileset.tileheight$/;"	f
+tiles	./src/nim_tiled.nim	/^proc tiles*   (layer: TiledLayer): seq[int] {.inline.}= layer.tiles$/;"	f
+tilesets	./src/nim_tiled.nim	/^proc tilesets*      (map: TiledMap): seq[TiledTileset] {.inline.} = map.tilesets$/;"	f
+tilewidth	./src/nim_tiled.nim	/^proc tilewidth*     (map: TiledMap): int {.inline.} = map.tilewidth$/;"	f
+tilewidth	./src/nim_tiled.nim	/^proc tilewidth* (tileset: TiledTileset): int {.inline.}= tileset.tilewidth$/;"	f
+uncompress	./src/nim_tiled/private/zlib.nim	/^proc uncompress*(dest: Pbytef, destLen: Pulongf, source: Pbytef,$/;"	f
+uncompress	./src/nim_tiled/private/zlib.nim	/^proc uncompress*(sourceBuf: cstring, sourceLen: Natural; stream=DETECT_STREAM): string =$/;"	f
+uncompress	./src/nim_tiled/private/zlib.nim	/^proc uncompress*(sourceBuf: string; stream=DETECT_STREAM): string =$/;"	f
+version	./src/nim_tiled.nim	/^proc version*       (map: TiledMap): string {.inline.} = map.version$/;"	f
+width	./src/nim_tiled.nim	/^proc width*         (map: TiledMap): int {.inline.} = map.width$/;"	f
+width	./src/nim_tiled.nim	/^proc width*   (layer: TiledLayer): int {.inline.}= layer.width$/;"	f
+width	./src/nim_tiled.nim	/^proc width* (r: TiledObject): auto {.inline.} = r.width$/;"	f
+width	./src/nim_tiled.nim	/^proc width* (r: TiledRegion): auto {.inline.} = r.width$/;"	f
+width	./src/nim_tiled.nim	/^proc width* (tileset: TiledTileset): int {.inline.}= tileset.width$/;"	f
+writeTiledToText	./tests/test1.nim	/^proc writeTiledToText(map: TiledMap): string=$/;"	f	file:
+x	./src/nim_tiled.nim	/^proc x* (r: TiledObject): auto {.inline.} = r.x$/;"	f
+x	./src/nim_tiled.nim	/^proc x* (r: TiledRegion): auto {.inline.} = r.x$/;"	f
+y	./src/nim_tiled.nim	/^proc y* (r: TiledObject): auto {.inline.} = r.y$/;"	f
+y	./src/nim_tiled.nim	/^proc y* (r: TiledRegion): auto {.inline.} = r.y$/;"	f
+zError	./src/nim_tiled/private/zlib.nim	/^proc zError*(err: int32): cstring{.cdecl, dynlib: libz, importc: "zError".}$/;"	f
+zlibAllocMem	./src/nim_tiled/private/zlib.nim	/^proc zlibAllocMem*(appData: pointer, items, size: int): pointer {.cdecl.} =$/;"	f
+zlibFreeMem	./src/nim_tiled/private/zlib.nim	/^proc zlibFreeMem*(appData, `block`: pointer) {.cdecl.} =$/;"	f
+zlibVersion	./src/nim_tiled/private/zlib.nim	/^proc zlibVersion*(): cstring{.cdecl, dynlib: libz, importc: "zlibVersion".}$/;"	f
