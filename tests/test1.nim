@@ -33,3 +33,5 @@ doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Zlib
 doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8ZlibEmbededTilesheet.tmx")))
 
 let map = loadTiledMap(getAppDir() & "/8x8ZlibEmbededTilesheet.tmx")
+doAssert(map.objectGroups[0].objects[0].name == "Lemon")
+doAssert(map.objectGroups[0].objects[0].objectType == "Tree")

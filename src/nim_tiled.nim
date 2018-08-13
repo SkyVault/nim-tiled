@@ -56,6 +56,8 @@ type
     TiledObject* = ref object of RootObj
       ## An object created by tiled using the shape tools
       x, y, width, height, rotation: float
+      name: string
+      objectType: string
       properties: TableRef[string, TiledValue]
 
     TiledPolygon* = ref object of TiledObject
@@ -169,6 +171,8 @@ proc x* (r: TiledObject): auto {.inline.} = r.x
 proc y* (r: TiledObject): auto {.inline.} = r.y
 proc width* (r: TiledObject): auto {.inline.} = r.width
 proc height* (r: TiledObject): auto {.inline.} = r.height
+proc name* (r: TiledObject): auto {.inline.} = r.name
+proc objectType* (r: TiledObject): auto {.inline.} = r.objectType
 proc properties* (r: TiledObject): auto {.inline.} = r.properties
 
 # Tiled Frame properties
@@ -344,7 +348,7 @@ proc loadTiledMap* (path: string): TiledMap=
     result.version = theXml.attr "version"
     result.tiledversion = theXml.attr "tiledversion"
 
-    result.orientation = 
+    result.orientation =
         if theXml.attr("orientation") == "orthogonal":
             TiledOrientation.Orthogonal
         else:
@@ -495,9 +499,19 @@ proc loadTiledMap* (path: string): TiledMap=
           let x = objXml.attr("x").parseFloat
           let y = objXml.attr("y").parseFloat
 
+          var name = ""
+          var otype = ""
           var width = 0.0
           var height = 0.0
           var rotation = 0.0
+
+          try:
+            name = objXml.attr("name")
+          except: discard
+
+          try:
+            otype = objXml.attr("type")
+          except: discard
 
           try:
             width = objXml.attr("width").parseFloat
@@ -555,6 +569,8 @@ proc loadTiledMap* (path: string): TiledMap=
                   x: x, y: y, width: width, height: height,
                   rotation: rotation,
                   points: newSeq[(float, float)](),
+                  name: name,
+                  objectType: otype,
                   properties: properties
                 )
 
@@ -576,6 +592,8 @@ proc loadTiledMap* (path: string): TiledMap=
                   x: x, y: y, width: width, height: height,
                   rotation: rotation,
                   points: newSeq[(float, float)](),
+                  name: name,
+                  objectType: otype,
                   properties: properties
                 )
 
@@ -590,7 +608,15 @@ proc loadTiledMap* (path: string): TiledMap=
               of "point":
                 isRect = false
 
-                var o = TiledPoint(x: x, y: y, width: 0, height: 0, rotation: rotation, properties: properties)
+                var o = TiledPoint(
+                  x: x,
+                  y: y,
+                  width: 0,
+                  height: 0,
+                  rotation: rotation,
+                  name: name,
+                  objectType: otype,
+                  properties: properties)
                 objectGroup.objects.add o
 
               of "ellipse":
@@ -602,6 +628,8 @@ proc loadTiledMap* (path: string): TiledMap=
                   width: width,
                   height: height,
                   rotation: rotation,
+                  name: name,
+                  objectType: otype,
                   properties: properties)
                 objectGroup.objects.add o
 
@@ -613,6 +641,8 @@ proc loadTiledMap* (path: string): TiledMap=
             var o = TiledObject(
                 x: x, y: y, width: width, height: height,
                 rotation: rotation,
+                name: name,
+                objectType: otype,
                 properties: properties
               )
 
