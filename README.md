@@ -1,4 +1,6 @@
 # Nim Tiled
+[![nimble](https://raw.githubusercontent.com/yglukhov/nimble-tag/master/nimble.png)](https://github.com/yglukhov/nimble-tag)
+
 ## Introduction
 
 Tiled map loader for the [Nim](nim-lang.org) programming language. The Tiled editor can be found [here](https://www.mapeditor.org/).
