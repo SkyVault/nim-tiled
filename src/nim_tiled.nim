@@ -96,6 +96,7 @@ type
         name: string
         width, height: int
         tiles: seq[int]
+        properties: TableRef[string, TiledValue]
 
     TiledObjectGroup* = ref object
         ## Layer for the objects on the map
@@ -143,6 +144,7 @@ proc name*    (layer: TiledLayer): string {.inline.}= layer.name
 proc width*   (layer: TiledLayer): int {.inline.}= layer.width
 proc height*  (layer: TiledLayer): int {.inline.}= layer.height
 proc tiles*   (layer: TiledLayer): seq[int] {.inline.}= layer.tiles
+proc properties* (layer: TiledLayer): auto {.inline.} = layer.properties
 
 # Public properties for the TiledObjectGroup
 proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.}= layer.objects
@@ -403,19 +405,52 @@ proc loadTiledMap* (path: string): TiledMap=
             name: layerXml.attr "name",
             width: layerXml.attr("width").parseInt,
             height: layerXml.attr("height").parseInt,
+            properties: newTable[string, TiledValue]()
         )
 
         layer.tiles = newSeq[int](layer.width * layer.height)
 
-        let dataXml = layerXml[0][0]
+        var dataIndex = 0
+        if layerXml.child("properties") != nil:
+          inc dataIndex
+          var propertiesXml = layerXml.child "properties"
+
+          for propXml in propertiesXml:
+            let theTypeStr = propXml.attr("type")
+
+            var str = propXml.attr("value")
+
+            proc hexStringToColor(color_str: string): auto=
+              let without_hash = color_str[1..len(color_str)-1]
+              let a = without_hash[0..1].parseHexInt().float / 255.0
+              let r = without_hash[2..3].parseHexInt().float / 255.0
+              let g = without_hash[4..5].parseHexInt().float / 255.0
+              let b = without_hash[6..7].parseHexInt().float / 255.0
+              result = (r, g, b, a)
+
+            let name = propXml.attr("name")
+            layer.properties[name] =
+              case theTypeStr:
+                of "color": TiledValue(valueType: tvColor, valueColor: hexStringToColor(str))
+                of "float":
+                  TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
+                of "int":
+                  TiledValue(valueType: tvInt, valueInt: str.parseInt)
+                of "bool":
+                  TiledValue(valueType: tvBool, valueBool: str == "true")
+                else:
+                  TiledValue(valueType: tvString, valueString: str)
+
+        let dataXml = layerXml[dataIndex]
+        let dataInnerXml = dataXml[0]
 
         var encoding = "xml"
-        if layerXml[0].attr("encoding") != "":
-          encoding = layerXml[0].attr("encoding")
+        if dataXml.attr("encoding") != "":
+          encoding = dataXml.attr("encoding")
 
         case encoding
         of "csv":
-          let dataText = dataXml.rawText
+          let dataText = dataInnerXml.rawText
           let dataTextLen = dataText.len
           var cursor = 0
           var index = 0
@@ -429,10 +464,10 @@ proc loadTiledMap* (path: string): TiledMap=
               index += 1
 
         of "base64":
-          let dataText = dataXml.rawText
+          let dataText = dataInnerXml.rawText
           var compression = "none"
-          if layerXml[0].attr("compression") != "":
-            compression = layerXml[0].attr("compression")
+          if dataXml.attr("compression") != "":
+            compression = dataXml.attr("compression")
           
           var decoded = dataText.strip()
           decoded = decode(decoded)
@@ -462,22 +497,8 @@ proc loadTiledMap* (path: string): TiledMap=
             layer.tiles[i] = int32 num
           
         of "xml":
-          # XML
-          #let dataText = dataXml.rawText
-          #let dataTextLen = dataText.len
-          #var cursor = 0
-          #var index = 0
-          #var token = ""
-
-          #while cursor < dataTextLen:
-              #cursor += parseUntil(dataText, token, ',', cursor) + 1
-              #token.removeSuffix()
-              #token.removePrefix()
-              #layer.tiles[index] = token.parseInt
-              #index += 1
-
           var index = 0
-          for tile in layerXml[0]:
+          for tile in dataXml:
             var gid = 0
             if tile.attr("gid") != "":
               gid = tile.attr("gid").parseInt

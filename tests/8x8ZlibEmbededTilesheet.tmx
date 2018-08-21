@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="2018.07.13" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="2">
+<map version="1.0" tiledversion="2018.08.06" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="2">
  <tileset firstgid="1" name="tileset" tilewidth="16" tileheight="16" tilecount="256" columns="16">
   <image source="tileset.png" width="256" height="256"/>
  </tileset>
  <layer id="3" name="Tile Layer 1" width="8" height="8">
+  <properties>
+   <property name="test" value="Hello World"/>
+  </properties>
   <data encoding="base64" compression="zlib">
    eJxjYGBgYAFiVgYEQOeLALEoHr4KEKvi4ZsAsSkOPswuXDTMLlw0zC5cNMwuXDQAzY8FWQ==
   </data>
