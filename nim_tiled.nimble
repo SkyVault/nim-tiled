@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.2.1"
+version       = "1.2.2"
 author        = "SkyVault"
 description   = "Tiled map loader for the Nim programming language"
 license       = "MIT"
