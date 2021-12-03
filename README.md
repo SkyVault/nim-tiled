@@ -60,3 +60,8 @@ while running:
   renderer.renderPresent()
 ```
 
+## Changelog
+
+- 2021.12.03 v1.3.0
+  - Removed zlib dependency, switched to pure nim `zippy`
+- 2021.12.03 fork

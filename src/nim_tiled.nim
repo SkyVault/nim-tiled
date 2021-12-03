@@ -1,4 +1,4 @@
-import 
+import
     xmlparser,
     xmltree,
     streams,
@@ -12,7 +12,7 @@ import
     base64,
     math,
     terminal,
-    nim_tiled/private/zlib
+    zippy
 
 type
     ## Color RGBA values range from 0.0 - 1.0
@@ -73,7 +73,7 @@ type
       tileid: int
       duration: int
 
-    TiledTile* = object 
+    TiledTile* = object
       tileid: int
       animation: seq[TiledFrame]
 
@@ -304,7 +304,7 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
 
   let num_tiles_w = (width / result.tilewidth).int
   let num_tiles_h = (height / result.tileheight).int
-  
+
   result.regions = newSeq[TiledRegion](num_tiles_w * num_tiles_h)
   var index = 0
   for y in 0..<num_tiles_h:
@@ -316,7 +316,7 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
               result.tileheight
           )
           index += 1
-    
+
 proc loadTileset* (path: string): TiledTileset=
     ## This loads a tileset from disk, usually only called from the
     ## loadTiledmap procedure
@@ -332,7 +332,7 @@ proc loadTileset* (path: string): TiledTileset=
     result = loadTileset theXml
 
 proc loadTiledMap* (path: string): TiledMap=
-  
+
     ## Loads a Tiled tmx file into a nim object
     if not assertWarn(fileExists path, fmt"cannot find tiled map: {path}"):
       return
@@ -355,7 +355,7 @@ proc loadTiledMap* (path: string): TiledMap=
             TiledOrientation.Orthogonal
         else:
             TiledOrientation.Orthogonal
-        
+
     result.renderorder =
         if theXml.attr("renderorder") == "right-down":
             TiledRenderorder.RightDown
@@ -368,7 +368,7 @@ proc loadTiledMap* (path: string): TiledMap=
 
     if theXml.attr("nextobjectid") != "":
       result.nextobjectid = theXml.attr("nextobjectid").parseInt
-        
+
     result.width = theXml.attr("width").parseInt
     result.height = theXml.attr("height").parseInt
 
@@ -380,7 +380,7 @@ proc loadTiledMap* (path: string): TiledMap=
             false
         else:
             true
-    
+
     if not assertWarn(result.infinite == false, fmt"Nim Tiled currently doesn't support infinite maps"):
       return
 
@@ -396,7 +396,7 @@ proc loadTiledMap* (path: string): TiledMap=
           tpath = parentDir(path) & "/" & node.attr("source")
 
           result.tilesets.add loadTileset(tpath)
-    
+
     let layers_xmlnodes = theXml.findAll "layer"
     let objects_xmlnodes = theXml.findAll "objectgroup"
 
@@ -468,14 +468,14 @@ proc loadTiledMap* (path: string): TiledMap=
           var compression = "none"
           if dataXml.attr("compression") != "":
             compression = dataXml.attr("compression")
-          
+
           var decoded = dataText.strip()
           decoded = decode(decoded)
           case compression:
             of "gzip":
-              decoded = uncompress(decoded, stream=GZIP_STREAM)
+              decoded = uncompress(decoded, dataFormat  = dfGzip)
             of "zlib":
-              decoded = uncompress(decoded, stream=ZLIB_STREAM)
+              decoded = uncompress(decoded, dataFormat  = dfZlib)
             else:
               discard
 
@@ -495,7 +495,7 @@ proc loadTiledMap* (path: string): TiledMap=
             var num: int32 = (a shl 24) or (b shl 16) or (g shl 8) or r
 
             layer.tiles[i] = int32 num
-          
+
         of "xml":
           var index = 0
           for tile in dataXml:
