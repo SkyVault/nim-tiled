@@ -14,6 +14,8 @@ import
     terminal,
     zippy
 
+import print
+
 type
     ## Color RGBA values range from 0.0 - 1.0
     TiledColor* =
@@ -55,16 +57,16 @@ type
 
     TiledObject* = ref object of RootObj
       ## An object created by tiled using the shape tools
-      x, y, width, height, rotation: float
-      name: string
-      objectType: string
-      properties: TableRef[string, TiledValue]
+      x*, y*, width*, height*, rotation*: float
+      name*: string
+      objectType*: string
+      properties*: TableRef[string, TiledValue]
 
     TiledPolygon* = ref object of TiledObject
-      points: seq[(float, float)]
+      points*: seq[(float, float)]
 
     TiledPolyline* = ref object of TiledObject
-      points: seq[(float, float)]
+      points*: seq[(float, float)]
 
     TiledPoint* = ref object of TiledObject
     TiledEllipse* = ref object of TiledObject
@@ -101,6 +103,7 @@ type
     TiledObjectGroup* = ref object
         ## Layer for the objects on the map
         objects: seq[TiledObject]
+        name: string
 
     TiledMap* = ref object
         version: string
@@ -140,27 +143,28 @@ proc layers*        (map: TiledMap): seq[TiledLayer] {.inline.} = map.layers
 proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] {.inline.} = map.objectGroups
 
 # Public properties for the TiledLayer
-proc name*    (layer: TiledLayer): string {.inline.}= layer.name
-proc width*   (layer: TiledLayer): int {.inline.}= layer.width
-proc height*  (layer: TiledLayer): int {.inline.}= layer.height
-proc tiles*   (layer: TiledLayer): seq[int] {.inline.}= layer.tiles
+proc name*    (layer: TiledLayer): string {.inline.} = layer.name
+proc width*   (layer: TiledLayer): int {.inline.} = layer.width
+proc height*  (layer: TiledLayer): int {.inline.} = layer.height
+proc tiles*   (layer: TiledLayer): seq[int] {.inline.} = layer.tiles
 proc properties* (layer: TiledLayer): auto {.inline.} = layer.properties
 
 # Public properties for the TiledObjectGroup
-proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.}= layer.objects
+proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.} = layer.objects
+proc name*   (layer: TiledObjectGroup): string {.inline.} = layer.name
 
 # Public properties for the TiledTileset
-proc name* (tileset: TiledTileset): string {.inline.}= tileset.name
-proc imagePath* (tileset: TiledTileset): string {.inline.}= tileset.imagePath
-proc tilewidth* (tileset: TiledTileset): int {.inline.}= tileset.tilewidth
-proc tileheight* (tileset: TiledTileset): int {.inline.}= tileset.tileheight
-proc firstgid* (tileset: TiledTileset): int {.inline.}= tileset.firstgid
-proc width* (tileset: TiledTileset): int {.inline.}= tileset.width
-proc height* (tileset: TiledTileset): int {.inline.}= tileset.height
-proc tilecount* (tileset: TiledTileset): int {.inline.}= tileset.tilecount
-proc columns* (tileset: TiledTileset): int {.inline.}= tileset.columns
-proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.}= tileset.regions
-proc tiles* (tileset: TiledTileset): auto {.inline.}= tileset.tiles
+proc name* (tileset: TiledTileset): string {.inline.} = tileset.name
+proc imagePath* (tileset: TiledTileset): string {.inline.} = tileset.imagePath
+proc tilewidth* (tileset: TiledTileset): int {.inline.} = tileset.tilewidth
+proc tileheight* (tileset: TiledTileset): int {.inline.} = tileset.tileheight
+proc firstgid* (tileset: TiledTileset): int {.inline.} = tileset.firstgid
+proc width* (tileset: TiledTileset): int {.inline.} = tileset.width
+proc height* (tileset: TiledTileset): int {.inline.} = tileset.height
+proc tilecount* (tileset: TiledTileset): int {.inline.} = tileset.tilecount
+proc columns* (tileset: TiledTileset): int {.inline.} = tileset.columns
+proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.} = tileset.regions
+proc tiles* (tileset: TiledTileset): auto {.inline.} = tileset.tiles
 
 # Public properties for the TiledRegion
 proc x* (r: TiledRegion): auto {.inline.} = r.x
@@ -270,6 +274,9 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
   var first = true
   for tile in theXml:
     if first: first = false; continue
+    if tile.attr("id") == "":
+      echo "tile has not id: ", tile
+      continue
     let tileid = tile.attr("id").parseInt
     let animation = tile[0]
 
@@ -514,6 +521,7 @@ proc loadTiledMap* (path: string): TiledMap=
         discard """ TODO: Implement"""
 
         var objectGroup = TiledObjectGroup(objects: newSeq[TiledObject]())
+        objectGroup.name = objectsXml.attr("name")
         result.objectGroups.add objectGroup
 
         for objXml in objectsXml:
