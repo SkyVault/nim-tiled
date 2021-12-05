@@ -14,8 +14,6 @@ import
     terminal,
     zippy
 
-import print
-
 type
     ## Color RGBA values range from 0.0 - 1.0
     TiledColor* =
@@ -75,9 +73,22 @@ type
       tileid: int
       duration: int
 
+    KindTiledTileCollisionShape = enum
+      kindTiledTileCollisionShapesPoint
+      kindTiledTileCollisionShapesRect
+
+    TiledTileCollisionShape* = ref object of RootObj
+      id*: int
+      kind*: KindTiledTileCollisionShape
+      x*, y*: float
+    TiledTileCollisionShapesPoint* = ref object of TiledTileCollisionShape
+    TiledTileCollisionShapesRect* = ref object of TiledTileCollisionShape
+      width*, height*: float
+
     TiledTile* = object
       tileid: int
       animation: seq[TiledFrame]
+      collisionShapes: Table[int, seq[TiledTileCollisionShape]]
 
     TiledTileset* = ref object
         ## Contains the data for each tile in the sprite sheet
@@ -278,19 +289,58 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
       echo "tile has not id: ", tile
       continue
     let tileid = tile.attr("id").parseInt
-    let animation = tile[0]
 
-    var tile = TiledTile(
+    var tiledTile = TiledTile(
       tileid: tileid,
       animation: @[])
 
-    for frame in animation:
-      var frame = TiledFrame(
-        tileid: frame.attr("tileid").parseInt,
-        duration: frame.attr("duration").parseInt)
+    let animations = tile.findAll("animation")
+    if animations.len > 0:
+      for frame in animations[0]:
+        var frame = TiledFrame(
+          tileid: frame.attr("tileid").parseInt,
+          duration: frame.attr("duration").parseInt)
+        tiledTile.animation.add(frame)
 
-      tile.animation.add(frame)
-    result.tiles.add(tileid, tile)
+    # Collision shapes are:
+    # objectgroup -> object(s)
+    let objectgroups = tile.findAll("objectgroup")
+    # there shoould be only one
+    if objectgroups.len >= 1:
+      let objectgroup = objectgroups[0]
+      let collisionShapes = objectgroup.findAll("object")
+      for collisionShape in collisionShapes:
+        let id = collisionShape.attr("id")
+        let x = collisionShape.attr("x")
+        let y = collisionShape.attr("y")
+        let width = collisionShape.attr("width")
+        let height = collisionShape.attr("height")
+        # todo only point and rect are currently supported
+        if width == "" and height == "":
+          # shape is a point
+          var tiledTileCollisionShapesPoint = TiledTileCollisionShapesPoint()
+          tiledTileCollisionShapesPoint.kind = kindTiledTileCollisionShapesPoint
+          tiledTileCollisionShapesPoint.id = id.parseInt()
+          tiledTileCollisionShapesPoint.x = x.parseFloat()
+          tiledTileCollisionShapesPoint.y = y.parseFloat()
+          if not tiledTile.collisionShapes.hasKey(tileId):
+            tiledTile.collisionShapes[tileId] = @[]
+          tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesPoint
+        else:
+          # shape is a rect
+          var tiledTileCollisionShapesRect = TiledTileCollisionShapesRect()
+          tiledTileCollisionShapesRect.kind = kindTiledTileCollisionShapesRect
+          tiledTileCollisionShapesRect.id = id.parseInt()
+          tiledTileCollisionShapesRect.x = x.parseFloat()
+          tiledTileCollisionShapesRect.y = y.parseFloat()
+          tiledTileCollisionShapesRect.width = width.parseFloat()
+          tiledTileCollisionShapesRect.height = height.parseFloat()
+          if not tiledTile.collisionShapes.hasKey(tileId):
+            tiledTile.collisionShapes[tileId] = @[]
+          tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesRect
+
+
+    result.tiles.add(tileid, tiledTile)
 
   let width = theImage.attr("width").parseInt
   let height = theImage.attr("height").parseInt
