@@ -73,7 +73,7 @@ type
       tileid: int
       duration: int
 
-    KindTiledTileCollisionShape = enum
+    KindTiledTileCollisionShape* = enum
       kindTiledTileCollisionShapesPoint
       kindTiledTileCollisionShapesRect
 
@@ -88,7 +88,8 @@ type
     TiledTile* = object
       tileid: int
       animation: seq[TiledFrame]
-      collisionShapes: Table[int, seq[TiledTileCollisionShape]]
+      # collisionShapes*: Table[int, seq[TiledTileCollisionShape]]
+      collisionShapes*: seq[TiledTileCollisionShape]
 
     TiledTileset* = ref object
         ## Contains the data for each tile in the sprite sheet
@@ -323,9 +324,10 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
           tiledTileCollisionShapesPoint.id = id.parseInt()
           tiledTileCollisionShapesPoint.x = x.parseFloat()
           tiledTileCollisionShapesPoint.y = y.parseFloat()
-          if not tiledTile.collisionShapes.hasKey(tileId):
-            tiledTile.collisionShapes[tileId] = @[]
-          tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesPoint
+          # if not tiledTile.collisionShapes.hasKey(tileId):
+          #   tiledTile.collisionShapes[tileId] = @[]
+          # tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesPoint
+          tiledTile.collisionShapes.add tiledTileCollisionShapesPoint
         else:
           # shape is a rect
           var tiledTileCollisionShapesRect = TiledTileCollisionShapesRect()
@@ -335,9 +337,10 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
           tiledTileCollisionShapesRect.y = y.parseFloat()
           tiledTileCollisionShapesRect.width = width.parseFloat()
           tiledTileCollisionShapesRect.height = height.parseFloat()
-          if not tiledTile.collisionShapes.hasKey(tileId):
-            tiledTile.collisionShapes[tileId] = @[]
-          tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesRect
+          # if not tiledTile.collisionShapes.hasKey(tileId):
+          #   tiledTile.collisionShapes[tileId] = @[]
+          # tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesRect
+          tiledTile.collisionShapes.add tiledTileCollisionShapesRect
 
 
     result.tiles.add(tileid, tiledTile)
