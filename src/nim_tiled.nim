@@ -56,6 +56,7 @@ type
     TiledObject* = ref object of RootObj
       ## An object created by tiled using the shape tools
       x*, y*, width*, height*, rotation*: float
+      id*: int
       name*: string
       objectType*: string
       properties*: TableRef[string, TiledValue]
@@ -73,13 +74,8 @@ type
       tileid: int
       duration: int
 
-    KindTiledTileCollisionShape* = enum
-      kindTiledTileCollisionShapesPoint
-      kindTiledTileCollisionShapesRect
-
     TiledTileCollisionShape* = ref object of RootObj
       id*: int
-      kind*: KindTiledTileCollisionShape
       x*, y*: float
     TiledTileCollisionShapesPoint* = ref object of TiledTileCollisionShape
     TiledTileCollisionShapesRect* = ref object of TiledTileCollisionShape
@@ -186,6 +182,7 @@ proc height* (r: TiledRegion): auto {.inline.} = r.height
 
 # Public properties for the TiledObject
 proc x* (r: TiledObject): auto {.inline.} = r.x
+proc id* (r: TiledObject): auto {.inline.} = r.id
 proc y* (r: TiledObject): auto {.inline.} = r.y
 proc width* (r: TiledObject): auto {.inline.} = r.width
 proc height* (r: TiledObject): auto {.inline.} = r.height
@@ -320,7 +317,6 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
         if width == "" and height == "":
           # shape is a point
           var tiledTileCollisionShapesPoint = TiledTileCollisionShapesPoint()
-          tiledTileCollisionShapesPoint.kind = kindTiledTileCollisionShapesPoint
           tiledTileCollisionShapesPoint.id = id.parseInt()
           tiledTileCollisionShapesPoint.x = x.parseFloat()
           tiledTileCollisionShapesPoint.y = y.parseFloat()
@@ -331,7 +327,6 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
         else:
           # shape is a rect
           var tiledTileCollisionShapesRect = TiledTileCollisionShapesRect()
-          tiledTileCollisionShapesRect.kind = kindTiledTileCollisionShapesRect
           tiledTileCollisionShapesRect.id = id.parseInt()
           tiledTileCollisionShapesRect.x = x.parseFloat()
           tiledTileCollisionShapesRect.y = y.parseFloat()
@@ -581,11 +576,14 @@ proc loadTiledMap* (path: string): TiledMap=
           let x = objXml.attr("x").parseFloat
           let y = objXml.attr("y").parseFloat
 
+          var id = 0
           var name = ""
           var otype = ""
           var width = 0.0
           var height = 0.0
           var rotation = 0.0
+
+          id = objXml.attr("id").parseInt
 
           try:
             name = objXml.attr("name")
@@ -648,7 +646,7 @@ proc loadTiledMap* (path: string): TiledMap=
                 let splits = pointsStr.split ' '
 
                 var o = TiledPolygon(
-                  x: x, y: y, width: width, height: height,
+                  id: id, x: x, y: y, width: width, height: height,
                   rotation: rotation,
                   points: newSeq[(float, float)](),
                   name: name,
@@ -671,7 +669,7 @@ proc loadTiledMap* (path: string): TiledMap=
                 let splits = pointsStr.split ' '
 
                 var o = TiledPolyline(
-                  x: x, y: y, width: width, height: height,
+                  id: id, x: x, y: y, width: width, height: height,
                   rotation: rotation,
                   points: newSeq[(float, float)](),
                   name: name,
@@ -691,6 +689,7 @@ proc loadTiledMap* (path: string): TiledMap=
                 isRect = false
 
                 var o = TiledPoint(
+                  id: id,
                   x: x,
                   y: y,
                   width: 0,
@@ -705,6 +704,7 @@ proc loadTiledMap* (path: string): TiledMap=
                 isRect = false
 
                 var o = TiledEllipse(
+                  id: id,
                   x: x,
                   y: y,
                   width: width,
@@ -721,11 +721,12 @@ proc loadTiledMap* (path: string): TiledMap=
 
           if isRect:
             var o = TiledObject(
-                x: x, y: y, width: width, height: height,
-                rotation: rotation,
-                name: name,
-                objectType: otype,
-                properties: properties
+              id: id,
+              x: x, y: y, width: width, height: height,
+              rotation: rotation,
+              name: name,
+              objectType: otype,
+              properties: properties
               )
 
             objectGroup.objects.add(o)
