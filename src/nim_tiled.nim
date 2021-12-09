@@ -80,6 +80,8 @@ type
     TiledTileCollisionShapesPoint* = ref object of TiledTileCollisionShape
     TiledTileCollisionShapesRect* = ref object of TiledTileCollisionShape
       width*, height*: float
+    TiledTileCollisionShapesPolygon* = ref object of TiledTileCollisionShape
+      points*: seq[(float, float)]
 
     TiledTile* = object
       tileid: int
@@ -128,6 +130,17 @@ type
         tilesets: seq[TiledTileset]
         layers: seq[TiledLayer]
         objectGroups: seq[TiledObjectGroup]
+
+proc extractPoints*(pstr: string): seq[tuple[x, y: float]] =
+  ## extract points ala: 0,0 32,29 0,29
+  var pos = 0
+  while pos < pstr.len:
+    var xstr, ystr: int
+    pos += pstr.parseInt(xstr, pos)
+    pos.inc # skip ,
+    pos += pstr.parseInt(ystr, pos)
+    pos.inc # skip ' '
+    result.add (xstr.float, ystr.float)
 
 proc `$`* (r: TiledRegion): string=
     result = "TiledRegion {\n"
@@ -314,7 +327,17 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
         let width = collisionShape.attr("width")
         let height = collisionShape.attr("height")
         # todo only point and rect are currently supported
-        if width == "" and height == "":
+        if not collisionShape.child("polygon").isNil:
+          # Polygon
+          let polygon = collisionShape.child("polygon")
+          var tiledTileCollisionShapesPolygon = TiledTileCollisionShapesPolygon()
+          tiledTileCollisionShapesPolygon.id = id.parseInt()
+          tiledTileCollisionShapesPolygon.x = x.parseFloat()
+          tiledTileCollisionShapesPolygon.y = y.parseFloat()
+          tiledTileCollisionShapesPolygon.points =
+            collisionShape.child("polygon").attr("points").extractPoints()
+          tiledTile.collisionShapes.add tiledTileCollisionShapesPolygon
+        elif width == "" and height == "":
           # shape is a point
           var tiledTileCollisionShapesPoint = TiledTileCollisionShapesPoint()
           tiledTileCollisionShapesPoint.id = id.parseInt()
@@ -372,7 +395,7 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
           )
           index += 1
 
-proc loadTileset* (path: string): TiledTileset=
+proc loadTileset*(path: string): TiledTileset=
     ## This loads a tileset from disk, usually only called from the
     ## loadTiledmap procedure
     result = TiledTileset()
@@ -386,7 +409,8 @@ proc loadTileset* (path: string): TiledTileset=
 
     result = loadTileset theXml
 
-proc loadTiledMap* (path: string): TiledMap=
+
+proc loadTiledMap*(path: string): TiledMap=
 
     ## Loads a Tiled tmx file into a nim object
     if not assertWarn(fileExists path, fmt"cannot find tiled map: {path}"):
@@ -512,11 +536,11 @@ proc loadTiledMap* (path: string): TiledMap=
           var token = ""
 
           while cursor < dataTextLen:
-              cursor += parseUntil(dataText, token, ',', cursor) + 1
-              token.removeSuffix()
-              token.removePrefix()
-              layer.tiles[index] = token.parseInt
-              index += 1
+            cursor += parseUntil(dataText, token, ',', cursor) + 1
+            token.removeSuffix()
+            token.removePrefix()
+            layer.tiles[index] = token.parseInt
+            index += 1
 
         of "base64":
           let dataText = dataInnerXml.rawText
@@ -642,9 +666,6 @@ proc loadTiledMap* (path: string): TiledMap=
               of "polygon":
                 isRect = false
 
-                let pointsStr = subXml.attr("points")
-                let splits = pointsStr.split ' '
-
                 var o = TiledPolygon(
                   id: id, x: x, y: y, width: width, height: height,
                   rotation: rotation,
@@ -654,19 +675,11 @@ proc loadTiledMap* (path: string): TiledMap=
                   properties: properties
                 )
 
-                for pstr in splits:
-                   let p = pstr.split(',')
-                   let x = p[0].parseFloat
-                   let y = p[1].parseFloat
-                   o.points.add (x, y)
-
+                o.points = extractPoints(subXml.attr("points"))
                 objectGroup.objects.add o
 
               of "polyline":
                 isRect = false
-
-                let pointsStr = subXml.attr("points")
-                let splits = pointsStr.split ' '
 
                 var o = TiledPolyline(
                   id: id, x: x, y: y, width: width, height: height,
@@ -677,12 +690,7 @@ proc loadTiledMap* (path: string): TiledMap=
                   properties: properties
                 )
 
-                for pstr in splits:
-                   let p = pstr.split(',')
-                   let x = p[0].parseFloat
-                   let y = p[1].parseFloat
-                   o.points.add (x, y)
-
+                o.points = extractPoints(subXml.attr("points"))
                 objectGroup.objects.add o
 
               of "point":
