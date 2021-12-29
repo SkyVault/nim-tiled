@@ -57,6 +57,7 @@ type
       ## An object created by tiled using the shape tools
       x*, y*, width*, height*, rotation*: float
       id*: int
+      gid*: int
       name*: string
       objectType*: string
       properties*: TableRef[string, TiledValue]
@@ -196,6 +197,7 @@ proc height* (r: TiledRegion): auto {.inline.} = r.height
 # Public properties for the TiledObject
 proc x* (r: TiledObject): auto {.inline.} = r.x
 proc id* (r: TiledObject): auto {.inline.} = r.id
+proc gid* (r: TiledObject): auto {.inline.} = r.gid
 proc y* (r: TiledObject): auto {.inline.} = r.y
 proc width* (r: TiledObject): auto {.inline.} = r.width
 proc height* (r: TiledObject): auto {.inline.} = r.height
@@ -601,6 +603,7 @@ proc loadTiledMap*(path: string): TiledMap=
           let y = objXml.attr("y").parseFloat
 
           var id = 0
+          var gid = 0
           var name = ""
           var otype = ""
           var width = 0.0
@@ -608,6 +611,10 @@ proc loadTiledMap*(path: string): TiledMap=
           var rotation = 0.0
 
           id = objXml.attr("id").parseInt
+
+          try:
+            gid = objXml.attr("gid").parseInt
+          except: discard
 
           try:
             name = objXml.attr("name")
@@ -730,6 +737,7 @@ proc loadTiledMap*(path: string): TiledMap=
           if isRect:
             var o = TiledObject(
               id: id,
+              gid: gid,
               x: x, y: y, width: width, height: height,
               rotation: rotation,
               name: name,
