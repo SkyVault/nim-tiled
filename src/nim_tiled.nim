@@ -21,7 +21,7 @@ type
 
     TiledRegion* = object
         ## Sprite region for each tile
-        x, y, width, height : int
+        x, y, width, height: int
 
     TiledOrientation* {.pure.} = enum
         ## Tile map orientation
@@ -37,7 +37,8 @@ type
       tvFloat,
       tvString,
       tvColor,
-      tvBool
+      tvBool,
+      tvObject
 
     TiledValue* = ref object
       ## Value of a property
@@ -52,6 +53,8 @@ type
             valueColor*: (float, float, float, float)
           of tvBool:
             valueBool*: bool
+          of tvObject:
+            valueObjectId*: int
 
     TiledObject* = ref object of RootObj
       ## An object created by tiled using the shape tools
@@ -664,6 +667,8 @@ proc loadTiledMap*(path: string): TiledMap=
                     TiledValue(valueType: tvInt, valueInt: str.parseInt)
                   of "bool":
                     TiledValue(valueType: tvBool, valueBool: str == "true")
+                  of "object":
+                    TiledValue(valueType: tvObject, valueObjectId: str.parseInt)
                   else:
                     TiledValue(valueType: tvString, valueString: str)
 
