@@ -15,9 +15,14 @@ import
     zippy
 
 type
-    ## Color RGBA values range from 0.0 - 1.0
-    TiledColor* =
-      (float, float, float, float)
+    TiledGid* = distinct uint32
+      ## A "Global Tile ID".
+      ## 
+      ## This is a value referring to a tile from any of the tilesets used by the map.
+      ## The upper bits are used as flags for horizontal, vertical and diagonal flipping.
+
+    TiledColor* = (float, float, float, float)
+      ## Color RGBA values range from 0.0 - 1.0
 
     TiledRegion* = object
         ## Sprite region for each tile
@@ -60,7 +65,7 @@ type
       ## An object created by tiled using the shape tools
       x*, y*, width*, height*, rotation*: float
       id*: int
-      gid*: int
+      gid*: TiledGid
       name*: string
       objectType*: string
       properties*: TableRef[string, TiledValue]
@@ -111,7 +116,7 @@ type
         ## Layer in the tile map
         name: string
         width, height: int
-        tiles: seq[int]
+        tiles: seq[TiledGid]
         properties: TableRef[string, TiledValue]
 
     TiledObjectGroup* = ref object
@@ -134,6 +139,17 @@ type
         tilesets: seq[TiledTileset]
         layers: seq[TiledLayer]
         objectGroups: seq[TiledObjectGroup]
+
+const
+  ValueMask = 0x1fffffff'u32
+  FlipDiagonal = 0x20000000'u32
+  FlipVertical = 0x40000000'u32
+  FlipHorizontal = 0x80000000'u32
+
+func value*(gid: TiledGid): int {.inline.} = (gid.uint32 and ValueMask).int
+func hflip*(gid: TiledGid): bool {.inline.} = (gid.uint32 and FlipHorizontal) != 0
+func vflip*(gid: TiledGid): bool {.inline.} = (gid.uint32 and FlipVertical) != 0
+func dflip*(gid: TiledGid): bool {.inline.} = (gid.uint32 and FlipDiagonal) != 0
 
 proc extractPoints*(pstr: string): seq[tuple[x, y: float]] =
   ## extract points ala: 0,0 32,29 0,29
@@ -171,7 +187,7 @@ proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] {.inline.} = map.obje
 proc name*    (layer: TiledLayer): string {.inline.} = layer.name
 proc width*   (layer: TiledLayer): int {.inline.} = layer.width
 proc height*  (layer: TiledLayer): int {.inline.} = layer.height
-proc tiles*   (layer: TiledLayer): seq[int] {.inline.} = layer.tiles
+proc tiles*   (layer: TiledLayer): seq[TiledGid] {.inline.} = layer.tiles
 proc properties* (layer: TiledLayer): auto {.inline.} = layer.properties
 
 # Public properties for the TiledObjectGroup
@@ -492,7 +508,7 @@ proc loadTiledMap*(path: string): TiledMap=
             properties: newTable[string, TiledValue]()
         )
 
-        layer.tiles = newSeq[int](layer.width * layer.height)
+        layer.tiles = newSeq[TiledGid](layer.width * layer.height)
 
         var dataIndex = 0
         if layerXml.child("properties") != nil:
@@ -544,7 +560,7 @@ proc loadTiledMap*(path: string): TiledMap=
             cursor += parseUntil(dataText, token, ',', cursor) + 1
             token.removeSuffix()
             token.removePrefix()
-            layer.tiles[index] = token.parseInt
+            layer.tiles[index] = token.parseUInt.TiledGid
             index += 1
 
         of "base64":
@@ -569,23 +585,23 @@ proc loadTiledMap*(path: string): TiledMap=
             seqOfChars[i] = c
             inc i
 
-          let length = (decoded.len() / sizeof(int32)).int
+          let length = (decoded.len() / sizeof(uint32)).int
 
           for i in 0..<length:
-            let r = int8 seqOfChars[(i*sizeof(int32))+0]
-            let g = int8 seqOfChars[(i*sizeof(int32))+1]
-            let b = int8 seqOfChars[(i*sizeof(int32))+2]
-            let a = int8 seqOfChars[(i*sizeof(int32))+3]
-            var num: int32 = (a shl 24) or (b shl 16) or (g shl 8) or r
+            let r = uint8 seqOfChars[(i*sizeof(uint32))+0]
+            let g = uint8 seqOfChars[(i*sizeof(uint32))+1]
+            let b = uint8 seqOfChars[(i*sizeof(uint32))+2]
+            let a = uint8 seqOfChars[(i*sizeof(uint32))+3]
+            var num: uint32 = (a shl 24) or (b shl 16) or (g shl 8) or r
 
-            layer.tiles[i] = int32 num
+            layer.tiles[i] = num.TiledGid
 
         of "xml":
           var index = 0
           for tile in dataXml:
-            var gid = 0
+            var gid = 0.TiledGid
             if tile.attr("gid") != "":
-              gid = tile.attr("gid").parseInt
+              gid = tile.attr("gid").parseUInt.TiledGid
             layer.tiles[index] = gid
             inc index
         else:
@@ -595,7 +611,6 @@ proc loadTiledMap*(path: string): TiledMap=
         result.layers.add(layer)
 
     for objectsXml in objects_xmlnodes:
-        discard """ TODO: Implement"""
 
         var objectGroup = TiledObjectGroup(objects: newSeq[TiledObject]())
         objectGroup.name = objectsXml.attr("name")
@@ -606,7 +621,7 @@ proc loadTiledMap*(path: string): TiledMap=
           let y = objXml.attr("y").parseFloat
 
           var id = 0
-          var gid = 0
+          var gid = 0.TiledGid
           var name = ""
           var otype = ""
           var width = 0.0
@@ -616,7 +631,7 @@ proc loadTiledMap*(path: string): TiledMap=
           id = objXml.attr("id").parseInt
 
           try:
-            gid = objXml.attr("gid").parseInt
+            gid = objXml.attr("gid").parseUInt.TiledGid
           except: discard
 
           try:
