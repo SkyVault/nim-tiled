@@ -61,6 +61,8 @@ type
           of tvObject:
             valueObjectId*: int
 
+    TiledProperties* = TableRef[string, TiledValue]
+
     TiledObject* = ref object of RootObj
       ## An object created by tiled using the shape tools
       x*, y*, width*, height*, rotation*: float
@@ -68,7 +70,7 @@ type
       gid*: TiledGid
       name*: string
       objectType*: string
-      properties*: TableRef[string, TiledValue]
+      properties*: TiledProperties
 
     TiledPolygon* = ref object of TiledObject
       points*: seq[(float, float)]
@@ -94,9 +96,11 @@ type
 
     TiledTile* = object
       tileid: int
+      tileType: string
       animation: seq[TiledFrame]
       # collisionShapes*: Table[int, seq[TiledTileCollisionShape]]
       collisionShapes*: seq[TiledTileCollisionShape]
+      properties*: TiledProperties
 
     TiledTileset* = ref object
         ## Contains the data for each tile in the sprite sheet
@@ -109,15 +113,15 @@ type
         tilecount: int
         columns: int
         regions: seq[TiledRegion]
-
+        properties: TiledProperties
         tiles: TableRef[int, TiledTile]
 
     TiledLayer* = ref object
         ## Layer in the tile map
         name: string
         width, height: int
+        properties: TiledProperties
         tiles: seq[TiledGid]
-        properties: TableRef[string, TiledValue]
 
     TiledObjectGroup* = ref object
         ## Layer for the objects on the map
@@ -135,6 +139,8 @@ type
         width, height: int
         tilewidth, tileheight: int
         infinite: bool
+
+        properties: TiledProperties
 
         tilesets: seq[TiledTileset]
         layers: seq[TiledLayer]
@@ -162,6 +168,19 @@ proc extractPoints*(pstr: string): seq[tuple[x, y: float]] =
     pos.inc # skip ' '
     result.add (xstr.float, ystr.float)
 
+proc `$`* (v: TiledValue): string =
+  result = "TiledValue {valueType: " & $v.valueType & ", "
+  result &= (
+    case v.valueType
+    of tvInt: "valueInt: " & $v.valueInt
+    of tvFloat: "valueFloat: " & $v.valueFloat
+    of tvString: "valueString: " & $v.valueString
+    of tvColor: "valueColor: " & $v.valueColor
+    of tvBool: "valueBool: " & $v.valueBool
+    of tvObject: "valueObjectId: " & $v.valueObjectId
+  )
+  result &= "}"
+  
 proc `$`* (r: TiledRegion): string=
     result = "TiledRegion {\n"
     result &= "   x: " & $r.x & "\n"
@@ -169,60 +188,63 @@ proc `$`* (r: TiledRegion): string=
     result &= "   w: " & $r.width & "\n"
     result &= "   h: " & $r.height & "\n}\n"
 
+{.push inline.}
+
 # Public properties for the TiledMap
-proc version*       (map: TiledMap): string {.inline.} = map.version
-proc tiledversion*  (map: TiledMap): string {.inline.} = map.tiledversion
-proc orientation*   (map: TiledMap): TiledOrientation {.inline.} = map.orientation
-proc renderorder*   (map: TiledMap): TiledRenderorder {.inline.} = map.renderorder
-proc width*         (map: TiledMap): int {.inline.} = map.width
-proc height*        (map: TiledMap): int {.inline.} = map.height
-proc tilewidth*     (map: TiledMap): int {.inline.} = map.tilewidth
-proc tileheight*    (map: TiledMap): int {.inline.} = map.tileheight
-proc infinite*      (map: TiledMap): bool {.inline.} = map.infinite
-proc tilesets*      (map: TiledMap): seq[TiledTileset] {.inline.} = map.tilesets
-proc layers*        (map: TiledMap): seq[TiledLayer] {.inline.} = map.layers
-proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] {.inline.} = map.objectGroups
+proc version*       (map: TiledMap): string = map.version
+proc tiledversion*  (map: TiledMap): string = map.tiledversion
+proc orientation*   (map: TiledMap): TiledOrientation = map.orientation
+proc renderorder*   (map: TiledMap): TiledRenderorder = map.renderorder
+proc width*         (map: TiledMap): int = map.width
+proc height*        (map: TiledMap): int = map.height
+proc tilewidth*     (map: TiledMap): int = map.tilewidth
+proc tileheight*    (map: TiledMap): int = map.tileheight
+proc infinite*      (map: TiledMap): bool = map.infinite
+proc tilesets*      (map: TiledMap): seq[TiledTileset] = map.tilesets
+proc layers*        (map: TiledMap): seq[TiledLayer] = map.layers
+proc objectGroups*  (map: TiledMap): seq[TiledObjectGroup] = map.objectGroups
 
 # Public properties for the TiledLayer
-proc name*    (layer: TiledLayer): string {.inline.} = layer.name
-proc width*   (layer: TiledLayer): int {.inline.} = layer.width
-proc height*  (layer: TiledLayer): int {.inline.} = layer.height
-proc tiles*   (layer: TiledLayer): seq[TiledGid] {.inline.} = layer.tiles
-proc properties* (layer: TiledLayer): auto {.inline.} = layer.properties
+proc name*    (layer: TiledLayer): string = layer.name
+proc width*   (layer: TiledLayer): int = layer.width
+proc height*  (layer: TiledLayer): int = layer.height
+proc tiles*   (layer: TiledLayer): seq[TiledGid] = layer.tiles
+proc properties* (layer: TiledLayer): auto = layer.properties
 
 # Public properties for the TiledObjectGroup
-proc objects*   (layer: TiledObjectGroup): seq[TiledObject] {.inline.} = layer.objects
-proc name*   (layer: TiledObjectGroup): string {.inline.} = layer.name
+proc objects*   (layer: TiledObjectGroup): seq[TiledObject] = layer.objects
+proc name*   (layer: TiledObjectGroup): string = layer.name
 
 # Public properties for the TiledTileset
-proc name* (tileset: TiledTileset): string {.inline.} = tileset.name
-proc imagePath* (tileset: TiledTileset): string {.inline.} = tileset.imagePath
-proc tilewidth* (tileset: TiledTileset): int {.inline.} = tileset.tilewidth
-proc tileheight* (tileset: TiledTileset): int {.inline.} = tileset.tileheight
-proc firstgid* (tileset: TiledTileset): int {.inline.} = tileset.firstgid
-proc width* (tileset: TiledTileset): int {.inline.} = tileset.width
-proc height* (tileset: TiledTileset): int {.inline.} = tileset.height
-proc tilecount* (tileset: TiledTileset): int {.inline.} = tileset.tilecount
-proc columns* (tileset: TiledTileset): int {.inline.} = tileset.columns
-proc regions* (tileset: TiledTileset): seq[TiledRegion] {.inline.} = tileset.regions
-proc tiles* (tileset: TiledTileset): auto {.inline.} = tileset.tiles
+proc name* (tileset: TiledTileset): string = tileset.name
+proc imagePath* (tileset: TiledTileset): string = tileset.imagePath
+proc tilewidth* (tileset: TiledTileset): int = tileset.tilewidth
+proc tileheight* (tileset: TiledTileset): int = tileset.tileheight
+proc firstgid* (tileset: TiledTileset): int = tileset.firstgid
+proc width* (tileset: TiledTileset): int = tileset.width
+proc height* (tileset: TiledTileset): int = tileset.height
+proc tilecount* (tileset: TiledTileset): int = tileset.tilecount
+proc columns* (tileset: TiledTileset): int = tileset.columns
+proc regions* (tileset: TiledTileset): seq[TiledRegion] = tileset.regions
+proc properties* (tileset: TiledTileset): auto = tileset.properties
+proc tiles* (tileset: TiledTileset): auto = tileset.tiles
 
 # Public properties for the TiledRegion
-proc x* (r: TiledRegion): auto {.inline.} = r.x
-proc y* (r: TiledRegion): auto {.inline.} = r.y
-proc width* (r: TiledRegion): auto {.inline.} = r.width
-proc height* (r: TiledRegion): auto {.inline.} = r.height
+proc x* (r: TiledRegion): auto = r.x
+proc y* (r: TiledRegion): auto = r.y
+proc width* (r: TiledRegion): auto = r.width
+proc height* (r: TiledRegion): auto = r.height
 
 # Public properties for the TiledObject
-proc x* (r: TiledObject): auto {.inline.} = r.x
-proc id* (r: TiledObject): auto {.inline.} = r.id
-proc gid* (r: TiledObject): auto {.inline.} = r.gid
-proc y* (r: TiledObject): auto {.inline.} = r.y
-proc width* (r: TiledObject): auto {.inline.} = r.width
-proc height* (r: TiledObject): auto {.inline.} = r.height
-proc name* (r: TiledObject): auto {.inline.} = r.name
-proc objectType* (r: TiledObject): auto {.inline.} = r.objectType
-proc properties* (r: TiledObject): auto {.inline.} = r.properties
+proc x* (r: TiledObject): auto = r.x
+proc id* (r: TiledObject): auto = r.id
+proc gid* (r: TiledObject): auto = r.gid
+proc y* (r: TiledObject): auto = r.y
+proc width* (r: TiledObject): auto = r.width
+proc height* (r: TiledObject): auto = r.height
+proc name* (r: TiledObject): auto = r.name
+proc objectType* (r: TiledObject): auto = r.objectType
+proc properties* (r: TiledObject): auto = r.properties
 
 # Tiled Frame properties
 proc tileid* (frame: TiledFrame): auto = frame.tileid
@@ -231,6 +253,9 @@ proc duration* (frame: TiledFrame): auto = frame.duration
 # Tiled Tile properties
 proc tileid* (tile: TiledTile): auto = tile.tileid
 proc animation* (tile: TiledTile): auto = tile.animation
+proc properties* (tile: TiledTile): auto = tile.properties
+
+{.pop.}
 
 proc `$`* (o: TiledPolygon): auto=
   result = "TiledPolygon{\n"
@@ -281,7 +306,8 @@ proc `$`* (t: TiledTile): auto=
 proc `$`* (t: TiledTileset): auto=
   result  = "TiledTileset{\n"
   result &= "   name:" & t.name & "\n"
-  result &= "   path:" & t.imagePath& "\n"
+  result &= "   path:" & t.imagePath & "\n"
+  result &= "   firstgid:" & $t.firstgid & "\n"
   result &= "   tilewidth:" & $t.tilewidth & "\n"
   result &= "   tileheight:" & $t.tileheight & "\n"
   result &= "   columns:" & $t.columns & "\n"
@@ -297,10 +323,39 @@ proc assertWarn(expression: bool, msg: string, color = true): bool=
     else:
       echo fmt"[nim_tiled]::Warning:: {msg}"
 
+proc addProperties(properties: TiledProperties; xml: XmlNode) =
+  ## Get all key/value pairs from a <properties> XML node and add them to the given properties table.
+
+  proc hexStringToColor(color_str: string): auto =
+    let without_hash = color_str[1..len(color_str)-1]
+    let a = without_hash[0..1].parseHexInt().float / 255.0
+    let r = without_hash[2..3].parseHexInt().float / 255.0
+    let g = without_hash[4..5].parseHexInt().float / 255.0
+    let b = without_hash[6..7].parseHexInt().float / 255.0
+    result = (r, g, b, a)
+  
+  for propXml in xml:
+    let theTypeStr = propXml.attr("type")
+    let name = propXml.attr("name")
+    let str = propXml.attr("value")
+    properties[name] = case theTypeStr:
+      of "color": TiledValue(valueType: tvColor, valueColor: hexStringToColor(str))
+      of "float": TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
+      of "int": TiledValue(valueType: tvInt, valueInt: str.parseInt)
+      of "bool": TiledValue(valueType: tvBool, valueBool: str == "true")
+      of "object": TiledValue(valueType: tvObject, valueObjectId: str.parseInt)
+      else: TiledValue(valueType: tvString, valueString: str)
+
+proc newTiledProperties*(xml: XmlNode = nil): TiledProperties =
+  result = newTable[string, TiledValue]()
+  if xml != nil:
+    result.addProperties(xml)
+
 proc newTiledRegion* (x, y, width, height: int): TiledRegion=
     TiledRegion(x: x, y: y, width: width, height: height)
 
-proc loadTileset* (theXml: XmlNode): TiledTileset=
+proc loadTileset*(theXml: XmlNode): TiledTileset =
+  ## Load a Tiled tileset from an XML node.
   result = TiledTileset(
     tiles: newTable[int, TiledTile]()
   )
@@ -310,6 +365,7 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
   result.tileheight   = theXml.attr("tileheight").parseInt
   result.tilecount    = theXml.attr("tilecount").parseInt
   result.columns      = theXml.attr("columns").parseInt
+  result.properties   = newTiledProperties(theXml.child("properties"))
 
   let theImage = theXml[0]
 
@@ -324,7 +380,10 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
 
     var tiledTile = TiledTile(
       tileid: tileid,
-      animation: @[])
+      tileType: tile.attr("type"),
+      properties: newTiledProperties(tile.child("properties")),
+      animation: @[]
+    )
 
     let animations = tile.findAll("animation")
     if animations.len > 0:
@@ -416,9 +475,15 @@ proc loadTileset* (theXml: XmlNode): TiledTileset=
           )
           index += 1
 
-proc loadTileset*(path: string): TiledTileset=
-    ## This loads a tileset from disk, usually only called from the
-    ## loadTiledmap procedure
+proc loadTileset*(path: string): TiledTileset =
+    ## Load a tileset from disk.
+    ## 
+    ## .. note::
+    ##    The `firstgid` will not be set for tilesets loaded in this way, which makes it
+    ##    hard to know which tile is being referred to when you are reading the map.
+    ## 
+    ##    Still you can use this procedure if you only want to work with a tileset directly.
+    ## 
     result = TiledTileset()
 
     if not assertWarn(fileExists path, fmt"cannot find tileset: {path}"):
@@ -431,7 +496,16 @@ proc loadTileset*(path: string): TiledTileset=
     result = loadTileset theXml
 
 
-proc loadTiledMap*(path: string): TiledMap=
+proc findTilesetByGid*(map: TiledMap; gid: TiledGid): TiledTileset =
+  ## Find the tileset which a certain Global Tile ID belongs to.
+  let val = gid.value
+  for tileset in map.tilesets:
+    if val < tileset.firstgid:
+      break
+    result = tileset
+
+
+proc loadTiledMap*(path: string): TiledMap =
 
     ## Loads a Tiled tmx file into a nim object
     if not assertWarn(fileExists path, fmt"cannot find tiled map: {path}"):
@@ -484,18 +558,16 @@ proc loadTiledMap*(path: string): TiledMap=
     if not assertWarn(result.infinite == false, fmt"Nim Tiled currently doesn't support infinite maps"):
       return
 
+    result.properties = newTiledProperties(theXml.child("properties"))
+
     let tileset_xmlnodes = theXml.findAll "tileset"
     for node in tileset_xmlnodes:
-        let npath = node.attr("source")
-
-        if npath == "":
-          result.tilesets.add loadTileset(node)
-        else:
-          var tpath = npath
-          #if parentDir(path) != parentDir(npath):
-          tpath = parentDir(path) & "/" & node.attr("source")
-
-          result.tilesets.add loadTileset(tpath)
+      let sourcePath = node.attr("source")
+      let tileset = 
+        if sourcePath == "": loadTileset(node)
+        else: loadTileset(parentDir(path) & "/" & sourcePath)
+      tileset.firstgid = node.attr("firstgid").parseInt
+      result.tilesets.add tileset
 
     let layers_xmlnodes = theXml.findAll "layer"
     let objects_xmlnodes = theXml.findAll "objectgroup"
@@ -505,7 +577,7 @@ proc loadTiledMap*(path: string): TiledMap=
             name: layerXml.attr "name",
             width: layerXml.attr("width").parseInt,
             height: layerXml.attr("height").parseInt,
-            properties: newTable[string, TiledValue]()
+            properties: newTiledProperties()
         )
 
         layer.tiles = newSeq[TiledGid](layer.width * layer.height)
@@ -513,33 +585,7 @@ proc loadTiledMap*(path: string): TiledMap=
         var dataIndex = 0
         if layerXml.child("properties") != nil:
           inc dataIndex
-          var propertiesXml = layerXml.child "properties"
-
-          for propXml in propertiesXml:
-            let theTypeStr = propXml.attr("type")
-
-            var str = propXml.attr("value")
-
-            proc hexStringToColor(color_str: string): auto=
-              let without_hash = color_str[1..len(color_str)-1]
-              let a = without_hash[0..1].parseHexInt().float / 255.0
-              let r = without_hash[2..3].parseHexInt().float / 255.0
-              let g = without_hash[4..5].parseHexInt().float / 255.0
-              let b = without_hash[6..7].parseHexInt().float / 255.0
-              result = (r, g, b, a)
-
-            let name = propXml.attr("name")
-            layer.properties[name] =
-              case theTypeStr:
-                of "color": TiledValue(valueType: tvColor, valueColor: hexStringToColor(str))
-                of "float":
-                  TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
-                of "int":
-                  TiledValue(valueType: tvInt, valueInt: str.parseInt)
-                of "bool":
-                  TiledValue(valueType: tvBool, valueBool: str == "true")
-                else:
-                  TiledValue(valueType: tvString, valueString: str)
+          layer.properties.addProperties(layerXml.child("properties"))
 
         let dataXml = layerXml[dataIndex]
         let dataInnerXml = dataXml[0]
@@ -621,6 +667,7 @@ proc loadTiledMap*(path: string): TiledMap=
           let y = objXml.attr("y").parseFloat
 
           var id = 0
+          var hasGid = false
           var gid = 0.TiledGid
           var name = ""
           var otype = ""
@@ -632,6 +679,7 @@ proc loadTiledMap*(path: string): TiledMap=
 
           try:
             gid = objXml.attr("gid").parseUInt.TiledGid
+            hasGid = true
           except: discard
 
           try:
@@ -654,38 +702,21 @@ proc loadTiledMap*(path: string): TiledMap=
             rotation = objXml.attr("rotation").parseFloat
           except: discard
 
-          var properties = newTable[string, TiledValue]()
+          let properties = newTiledProperties()
 
+          # Copy object properties from tile.
+          if hasGid:
+            let tileset = result.findTilesetByGid(gid)
+            if tileset != nil:
+              let tile = addr tileset.tiles[gid.value - tileset.firstgid]
+              properties[] = tile.properties[]
+              # Also copy tile type if we don't have our own.
+              if otype == "":
+                otype = tile.tileType
+          
+          # Override with own properties.
           if objXml.child("properties") != nil:
-            var propertiesXml = objXml.child "properties"
-
-            for propXml in propertiesXml:
-              let theTypeStr = propXml.attr("type")
-
-              var str = propXml.attr("value")
-
-              proc hexStringToColor(color_str: string): auto=
-                let without_hash = color_str[1..len(color_str)-1]
-                let a = without_hash[0..1].parseHexInt().float / 255.0
-                let r = without_hash[2..3].parseHexInt().float / 255.0
-                let g = without_hash[4..5].parseHexInt().float / 255.0
-                let b = without_hash[6..7].parseHexInt().float / 255.0
-                result = (r, g, b, a)
-
-              let name = propXml.attr("name")
-              properties[name] =
-                case theTypeStr:
-                  of "color": TiledValue(valueType: tvColor, valueColor: hexStringToColor(str))
-                  of "float":
-                    TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
-                  of "int":
-                    TiledValue(valueType: tvInt, valueInt: str.parseInt)
-                  of "bool":
-                    TiledValue(valueType: tvBool, valueBool: str == "true")
-                  of "object":
-                    TiledValue(valueType: tvObject, valueObjectId: str.parseInt)
-                  else:
-                    TiledValue(valueType: tvString, valueString: str)
+            properties.addProperties(objXml.child("properties"))
 
           var isRect = true
           for subXml in objXml:
