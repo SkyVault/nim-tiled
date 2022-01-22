@@ -458,7 +458,7 @@ proc loadTiledMap*(path: string): TiledMap =
     if theXml.attr("orientation") == "orthogonal":
       TiledOrientation.Orthogonal
     else:
-      TiledOrientation.Orthogonal
+      TiledOrientation.Orthographic
 
   result.renderorder =
     if theXml.attr("renderorder") == "right-down":
