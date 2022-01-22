@@ -26,7 +26,7 @@ type
 
   TiledRegion* = object
     ## Sprite region for each tile
-    x, y, width, height: int
+    x*, y*, width*, height*: int
 
   TiledOrientation* {.pure.} = enum
     ## Tile map orientation
@@ -82,8 +82,8 @@ type
   TiledEllipse* = ref object of TiledObject
 
   TiledFrame* = object
-    tileid: int
-    duration: int
+    tileid*: int
+    duration*: int
 
   TiledTileCollisionShape* = ref object of RootObj
     id*: int
@@ -95,55 +95,55 @@ type
     points*: seq[(float, float)]
 
   TiledTile* = object
-    tileid: int
-    tileType: string
-    animation: seq[TiledFrame]
+    tileid*: int
+    tileType*: string
+    animation*: seq[TiledFrame]
     collisionShapes*: seq[TiledTileCollisionShape]
     properties*: TiledProperties
 
   TiledTileset* = ref object
     ## Contains the data for each tile in the sprite sheet
     ## and the size of each tile and image
-    name: string
-    imagePath: string
-    tilewidth, tileheight: int
-    firstgid: int
-    width, height: int
-    tilecount: int
-    columns: int
-    regions: seq[TiledRegion]
-    properties: TiledProperties
-    tiles: TableRef[int, TiledTile]
+    name*: string
+    imagePath*: string
+    tilewidth*, tileheight*: int
+    firstgid*: int
+    width*, height*: int
+    tilecount*: int
+    columns*: int
+    regions*: seq[TiledRegion]
+    properties*: TiledProperties
+    tiles*: TableRef[int, TiledTile]
 
   TiledLayer* = ref object
     ## Layer in the tile map
-    name: string
-    width, height: int
-    properties: TiledProperties
-    tiles: seq[TiledGid]
+    name*: string
+    width*, height*: int
+    properties*: TiledProperties
+    tiles*: seq[TiledGid]
 
   TiledObjectGroup* = ref object
     ## Layer for the objects on the map
-    objects: seq[TiledObject]
-    name: string
+    objects*: seq[TiledObject]
+    name*: string
 
   TiledMap* = ref object
-    version: string
-    tiledversion: string
-    orientation: TiledOrientation
-    renderorder: TiledRenderorder
+    version*: string
+    tiledversion*: string
+    orientation*: TiledOrientation
+    renderorder*: TiledRenderorder
 
     nextlayerid, nextobjectid: int
 
-    width, height: int
-    tilewidth, tileheight: int
-    infinite: bool
+    width*, height*: int
+    tilewidth*, tileheight*: int
+    infinite*: bool
 
-    properties: TiledProperties
+    properties*: TiledProperties
 
-    tilesets: seq[TiledTileset]
-    layers: seq[TiledLayer]
-    objectGroups: seq[TiledObjectGroup]
+    tilesets*: seq[TiledTileset]
+    layers*: seq[TiledLayer]
+    objectGroups*: seq[TiledObjectGroup]
 
 const
   ValueMask = 0x1fffffff'u32
@@ -186,75 +186,6 @@ proc `$`*(r: TiledRegion): string =
   result &= "   y: " & $r.y & "\n"
   result &= "   w: " & $r.width & "\n"
   result &= "   h: " & $r.height & "\n}\n"
-
-{.push inline.}
-
-# Public properties for the TiledMap
-proc version*(map: TiledMap): string = map.version
-proc tiledversion*(map: TiledMap): string = map.tiledversion
-proc orientation*(map: TiledMap): TiledOrientation = map.orientation
-proc renderorder*(map: TiledMap): TiledRenderorder = map.renderorder
-proc width*(map: TiledMap): int = map.width
-proc height*(map: TiledMap): int = map.height
-proc tilewidth*(map: TiledMap): int = map.tilewidth
-proc tileheight*(map: TiledMap): int = map.tileheight
-proc infinite*(map: TiledMap): bool = map.infinite
-proc tilesets*(map: TiledMap): seq[TiledTileset] = map.tilesets
-proc layers*(map: TiledMap): seq[TiledLayer] = map.layers
-proc objectGroups*(map: TiledMap): seq[TiledObjectGroup] = map.objectGroups
-
-# Public properties for the TiledLayer
-proc name*(layer: TiledLayer): string = layer.name
-proc width*(layer: TiledLayer): int = layer.width
-proc height*(layer: TiledLayer): int = layer.height
-proc tiles*(layer: TiledLayer): seq[TiledGid] = layer.tiles
-proc properties*(layer: TiledLayer): auto = layer.properties
-
-# Public properties for the TiledObjectGroup
-proc objects*(layer: TiledObjectGroup): seq[TiledObject] = layer.objects
-proc name*(layer: TiledObjectGroup): string = layer.name
-
-# Public properties for the TiledTileset
-proc name*(tileset: TiledTileset): string = tileset.name
-proc imagePath*(tileset: TiledTileset): string = tileset.imagePath
-proc tilewidth*(tileset: TiledTileset): int = tileset.tilewidth
-proc tileheight*(tileset: TiledTileset): int = tileset.tileheight
-proc firstgid*(tileset: TiledTileset): int = tileset.firstgid
-proc width*(tileset: TiledTileset): int = tileset.width
-proc height*(tileset: TiledTileset): int = tileset.height
-proc tilecount*(tileset: TiledTileset): int = tileset.tilecount
-proc columns*(tileset: TiledTileset): int = tileset.columns
-proc regions*(tileset: TiledTileset): seq[TiledRegion] = tileset.regions
-proc properties*(tileset: TiledTileset): auto = tileset.properties
-proc tiles*(tileset: TiledTileset): auto = tileset.tiles
-
-# Public properties for the TiledRegion
-proc x*(r: TiledRegion): auto = r.x
-proc y*(r: TiledRegion): auto = r.y
-proc width*(r: TiledRegion): auto = r.width
-proc height*(r: TiledRegion): auto = r.height
-
-# Public properties for the TiledObject
-proc x*(r: TiledObject): auto = r.x
-proc id*(r: TiledObject): auto = r.id
-proc gid*(r: TiledObject): auto = r.gid
-proc y*(r: TiledObject): auto = r.y
-proc width*(r: TiledObject): auto = r.width
-proc height*(r: TiledObject): auto = r.height
-proc name*(r: TiledObject): auto = r.name
-proc objectType*(r: TiledObject): auto = r.objectType
-proc properties*(r: TiledObject): auto = r.properties
-
-# Tiled Frame properties
-proc tileid*(frame: TiledFrame): auto = frame.tileid
-proc duration*(frame: TiledFrame): auto = frame.duration
-
-# Tiled Tile properties
-proc tileid*(tile: TiledTile): auto = tile.tileid
-proc animation*(tile: TiledTile): auto = tile.animation
-proc properties*(tile: TiledTile): auto = tile.properties
-
-{.pop.}
 
 proc `$`*(o: TiledPolygon): auto =
   result = "TiledPolygon{\n"
