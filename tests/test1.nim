@@ -9,7 +9,7 @@ proc writeTiledToText(map: TiledMap): string=
     for x in 0..<map.width:
       let index = x + y * map.width
       for layer in map.layers:
-        if layer.tiles[index] != 0:
+        if layer.tiles[index].value != 0:
           line[x] = '#'
         else:
           line[x] = '.'
