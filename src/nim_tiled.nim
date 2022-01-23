@@ -36,7 +36,7 @@ type
   TiledRenderorder* {.pure.} = enum
     RightDown
 
-  TiledValueType* = enum
+  TiledValueKind* = enum
     ## All of the different types that an objects property could be
     tvInt
     tvFloat
@@ -47,7 +47,7 @@ type
 
   TiledValue* = ref object
     ## Value of a property
-    case valueType*: TiledValueType
+    case kind*: TiledValueKind
     of tvInt:
       valueInt*: int
     of tvFloat:
@@ -63,42 +63,55 @@ type
 
   TiledProperties* = TableRef[string, TiledValue]
 
-  TiledObject* = ref object of RootObj
-    ## An object created by tiled using the shape tools
+  TiledObjectKind* = enum
+    tkTile
+    tkRectangle
+    tkPolygon
+    tkPolyline
+    tkPoint
+    tkEllipse
+  
+  TiledObject* = ref object
+    ## An object created using the shape tools
     x*, y*, width*, height*, rotation*: float
     id*: int
-    gid*: TiledGid
     name*: string
     objectType*: string
     properties*: TiledProperties
-
-  TiledPolygon* = ref object of TiledObject
-    points*: seq[(float, float)]
-
-  TiledPolyline* = ref object of TiledObject
-    points*: seq[(float, float)]
-
-  TiledPoint* = ref object of TiledObject
-  TiledEllipse* = ref object of TiledObject
+    case kind*: TiledObjectKind
+    of tkRectangle, tkPoint, tkEllipse:
+      discard
+    of tkTile:
+      gid*: TiledGid
+    of tkPolygon, tkPolyline:
+      points*: seq[(float, float)]
 
   TiledFrame* = object
     tileid*: int
     duration*: int
 
-  TiledTileCollisionShape* = ref object of RootObj
+  TiledCollisionShapeKind* = enum
+    tcsPoint
+    tcsRectangle
+    tcsPolygon
+    tcsEllipse
+
+  TiledCollisionShape* = ref object
     id*: int
     x*, y*: float
-  TiledTileCollisionShapesPoint* = ref object of TiledTileCollisionShape
-  TiledTileCollisionShapesRect* = ref object of TiledTileCollisionShape
-    width*, height*: float
-  TiledTileCollisionShapesPolygon* = ref object of TiledTileCollisionShape
-    points*: seq[(float, float)]
+    case kind*: TiledCollisionShapeKind
+    of tcsPoint:
+      discard
+    of tcsRectangle, tcsEllipse:
+      width*, height*: float
+    of tcsPolygon:
+      points*: seq[(float, float)]
 
   TiledTile* = object
     tileid*: int
     tileType*: string
     animation*: seq[TiledFrame]
-    collisionShapes*: seq[TiledTileCollisionShape]
+    collisionShapes*: seq[TiledCollisionShape]
     properties*: TiledProperties
 
   TiledTileset* = ref object
@@ -167,10 +180,12 @@ proc extractPoints*(pstr: string): seq[tuple[x, y: float]] =
     pos.inc # skip ' '
     result.add (xstr.float, ystr.float)
 
+proc `$`*(v: TiledGid): string = $v.value  # show value without flipping flags.
+
 proc `$`*(v: TiledValue): string =
-  result = "TiledValue {valueType: " & $v.valueType & ", "
+  result = "TiledValue {kind: " & $v.kind & ", "
   result &= (
-    case v.valueType
+    case v.kind
     of tvInt: "valueInt: " & $v.valueInt
     of tvFloat: "valueFloat: " & $v.valueFloat
     of tvString: "valueString: " & $v.valueString
@@ -187,40 +202,24 @@ proc `$`*(r: TiledRegion): string =
   result &= "   w: " & $r.width & "\n"
   result &= "   h: " & $r.height & "\n}\n"
 
-proc `$`*(o: TiledPolygon): auto =
-  result = "TiledPolygon{\n"
-  result &= "   x:" & $o.x & "\n"
-  result &= "   y:" & $o.y & "\n"
-  result &= "   width:" & $o.width & "\n"
-  result &= "   height:" & $o.height & "\n"
-  result &= "   points: ["
-  for p in o.points:
-    result &= fmt"({p[0]},{p[1]}),"
-  result &= "]\n}"
-
-proc `$`*(o: TiledPolyline): auto =
-  result = "TiledPolyline{\n"
-  result &= "   x:" & $o.x & "\n"
-  result &= "   y:" & $o.y & "\n"
-  result &= "   width:" & $o.width & "\n"
-  result &= "   height:" & $o.height & "\n"
-  result &= "   points: ["
-  for p in o.points:
-    result &= fmt"({p[0]},{p[1]}),"
-  result &= "]\n}"
-
-proc `$`*(o: TiledPoint): auto =
-  result = "TiledPoint{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
-
-proc `$`*(o: TiledEllipse): auto =
-  result = "TiledEllipse{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
-
 proc `$`*(o: TiledObject): auto =
-  if o of TiledPoint: return $(o.TiledPoint)
-  if o of TiledEllipse: return $(o.TiledEllipse)
-  if o of TiledPolygon: return $(o.TiledPolygon)
-  if o of TiledPolyline: return $(o.TiledPolyline)
-  result = "TiledObject{x:"& $o.x & " y:" & $o.y & " width:" & $o.width & " height:" & $o.height & "}"
+  result = "TiledObject {\n"
+  result &= "   kind: " & $o.kind & "\n"
+  result &= "   name: " & o.name & "\n"
+  result &= "   type: " & o.objectType & "\n"
+  if o.kind == tkTile:
+    result &= "   gid: " & $o.gid & "\n"
+  result &= "   x: " & $o.x & "\n"
+  result &= "   y: " & $o.y & "\n"
+  if o.kind in {tkTile, tkRectangle, tkEllipse}:
+    result &= "   width: " & $o.width & "\n"
+    result &= "   height: " & $o.height & "\n"
+  elif o.kind in {tkPolygon, tkPolyline}:
+    result &= "   points: ["
+    for p in o.points:
+      result &= fmt"({p[0]},{p[1]}),"
+    result &= "]"
+  result &= "}"
 
 proc `$`*(f: TiledFrame): auto =
   result = "TiledFrame{tileid: " & $f.tileid & ", duration: " & $f.duration & "}"
@@ -269,12 +268,12 @@ proc addProperties(properties: TiledProperties; xml: XmlNode) =
     let name = propXml.attr("name")
     let str = propXml.attr("value")
     properties[name] = case theTypeStr:
-      of "color": TiledValue(valueType: tvColor, valueColor: hexStringToColor(str))
-      of "float": TiledValue(valueType: tvFloat, valueFloat: str.parseFloat)
-      of "int": TiledValue(valueType: tvInt, valueInt: str.parseInt)
-      of "bool": TiledValue(valueType: tvBool, valueBool: str == "true")
-      of "object": TiledValue(valueType: tvObject, valueObjectId: str.parseInt)
-      else: TiledValue(valueType: tvString, valueString: str)
+      of "color": TiledValue(kind: tvColor, valueColor: hexStringToColor(str))
+      of "float": TiledValue(kind: tvFloat, valueFloat: str.parseFloat)
+      of "int": TiledValue(kind: tvInt, valueInt: str.parseInt)
+      of "bool": TiledValue(kind: tvBool, valueBool: str == "true")
+      of "object": TiledValue(kind: tvObject, valueObjectId: str.parseInt)
+      else: TiledValue(kind: tvString, valueString: str)
 
 proc newTiledProperties*(xml: XmlNode = nil): TiledProperties =
   result = newTable[string, TiledValue]()
@@ -326,7 +325,7 @@ proc loadTileset*(theXml: XmlNode): TiledTileset =
     # Collision shapes are:
     # objectgroup -> object(s)
     let objectgroups = tile.findAll("objectgroup")
-    # there shoould be only one
+    # there should be only one
     if objectgroups.len >= 1:
       let objectgroup = objectgroups[0]
       let collisionShapes = objectgroup.findAll("object")
@@ -336,40 +335,45 @@ proc loadTileset*(theXml: XmlNode): TiledTileset =
         let y = collisionShape.attr("y")
         let width = collisionShape.attr("width")
         let height = collisionShape.attr("height")
-        # todo only point and rect are currently supported
-        if not collisionShape.child("polygon").isNil:
-          # Polygon
-          let polygon = collisionShape.child("polygon")
-          var tiledTileCollisionShapesPolygon = TiledTileCollisionShapesPolygon()
-          tiledTileCollisionShapesPolygon.id = id.parseInt()
-          tiledTileCollisionShapesPolygon.x = x.parseFloat()
-          tiledTileCollisionShapesPolygon.y = y.parseFloat()
-          tiledTileCollisionShapesPolygon.points =
-            collisionShape.child("polygon").attr("points").extractPoints()
-          tiledTile.collisionShapes.add tiledTileCollisionShapesPolygon
-        elif width == "" and height == "":
-          # shape is a point
-          var tiledTileCollisionShapesPoint = TiledTileCollisionShapesPoint()
-          tiledTileCollisionShapesPoint.id = id.parseInt()
-          tiledTileCollisionShapesPoint.x = x.parseFloat()
-          tiledTileCollisionShapesPoint.y = y.parseFloat()
-          # if not tiledTile.collisionShapes.hasKey(tileId):
-          #   tiledTile.collisionShapes[tileId] = @[]
-          # tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesPoint
-          tiledTile.collisionShapes.add tiledTileCollisionShapesPoint
-        else:
-          # shape is a rect
-          var tiledTileCollisionShapesRect = TiledTileCollisionShapesRect()
-          tiledTileCollisionShapesRect.id = id.parseInt()
-          tiledTileCollisionShapesRect.x = x.parseFloat()
-          tiledTileCollisionShapesRect.y = y.parseFloat()
-          tiledTileCollisionShapesRect.width = width.parseFloat()
-          tiledTileCollisionShapesRect.height = height.parseFloat()
-          # if not tiledTile.collisionShapes.hasKey(tileId):
-          #   tiledTile.collisionShapes[tileId] = @[]
-          # tiledTile.collisionShapes[tileId].add tiledTileCollisionShapesRect
-          tiledTile.collisionShapes.add tiledTileCollisionShapesRect
 
+        var shape: TiledCollisionShape = nil
+
+        if collisionShape.child("polygon") != nil:
+          shape = TiledCollisionShape(
+            kind: tcsPolygon,
+            id: id.parseInt(),
+            x: x.parseFloat(),
+            y: y.parseFloat(),
+            points: collisionShape.child("polygon").attr("points").extractPoints()
+          )
+        elif width == "" and height == "":
+          shape = TiledCollisionShape(
+            kind: tcsPoint,
+            id: id.parseInt(),
+            x: x.parseFloat(),
+            y: y.parseFloat(),
+          )
+        elif collisionShape.child("ellipse") != nil:
+          shape = TiledCollisionShape(
+            kind: tcsEllipse,
+            id: id.parseInt(),
+            x: x.parseFloat(),
+            y: y.parseFloat(),
+            width: width.parseFloat(),
+            height: height.parseFloat(),
+          )
+        else:
+          shape = TiledCollisionShape(
+            kind: tcsRectangle,
+            id: id.parseInt(),
+            x: x.parseFloat(),
+            y: y.parseFloat(),
+            width: width.parseFloat(),
+            height: height.parseFloat(),
+          )
+
+        if shape != nil:
+          tiledTile.collisionShapes.add shape
 
     result.tiles.add(tileid, tiledTile)
 
@@ -645,59 +649,44 @@ proc loadTiledMap*(path: string): TiledMap =
       if objXml.child("properties") != nil:
         properties.addProperties(objXml.child("properties"))
 
-      var isRect = true
+      var obj: TiledObject = nil
+
       for subXml in objXml:
         case subXml.tag
         of "polygon":
-          isRect = false
-
-          var o = TiledPolygon(
-            id: id, x: x, y: y, width: width, height: height,
+          obj = TiledObject(
+            kind: tkPolygon,
+            id: id, x: x, y: y,
             rotation: rotation,
-            points: newSeq[(float, float)](),
+            points: extractPoints(subXml.attr("points")),
             name: name,
             objectType: otype,
             properties: properties
           )
-
-          o.points = extractPoints(subXml.attr("points"))
-          objectGroup.objects.add o
 
         of "polyline":
-          isRect = false
-
-          var o = TiledPolyline(
-            id: id, x: x, y: y, width: width, height: height,
+          obj = TiledObject(
+            kind: tkPolyline,
+            id: id, x: x, y: y,
             rotation: rotation,
-            points: newSeq[(float, float)](),
+            points: extractPoints(subXml.attr("points")),
             name: name,
             objectType: otype,
             properties: properties
           )
-
-          o.points = extractPoints(subXml.attr("points"))
-          objectGroup.objects.add o
 
         of "point":
-          isRect = false
-
-          var o = TiledPoint(
-            id: id,
-            x: x,
-            y: y,
-            width: 0,
-            height: 0,
-            rotation: rotation,
+          obj = TiledObject(
+            kind: tkPoint,
+            id: id, x: x, y: y,
             name: name,
             objectType: otype,
             properties: properties
           )
-          objectGroup.objects.add o
 
         of "ellipse":
-          isRect = false
-
-          var o = TiledEllipse(
+          obj = TiledObject(
+            kind: tkEllipse,
             id: id,
             x: x,
             y: y,
@@ -708,21 +697,34 @@ proc loadTiledMap*(path: string): TiledMap =
             objectType: otype,
             properties: properties
           )
-          objectGroup.objects.add o
 
         of "properties": discard
         else:
           echo fmt"Nim Tiled unsuported object type: {subXml.tag}"
 
-      if isRect:
-        var o = TiledObject(
-          id: id,
-          gid: gid,
-          x: x, y: y, width: width, height: height,
-          rotation: rotation,
-          name: name,
-          objectType: otype,
-          properties: properties
-        )
-
-        objectGroup.objects.add(o)
+      if obj == nil:
+        if hasGid:
+          obj = TiledObject(
+            kind: tkTile,
+            id: id, x: x, y: y,
+            gid: gid,
+            width: width,
+            height: height,
+            rotation: rotation,
+            name: name,
+            objectType: otype,
+            properties: properties
+          )
+        else:
+          obj = TiledObject(
+            kind: tkRectangle,
+            id: id, x: x, y: y,
+            width: width,
+            height: height,
+            rotation: rotation,
+            name: name,
+            objectType: otype,
+            properties: properties
+          )
+      
+      objectGroup.objects.add(obj)
