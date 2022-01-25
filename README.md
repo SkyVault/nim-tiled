@@ -44,7 +44,7 @@ while running:
     for y in 0..<layer.height:
       for x in 0..<layer.width:
         let index = x + y * layer.width
-        let gid = layer.tiles[index]
+        let gid = layer.tiles[index].value
 
         if gid != 0:
           let region = tileset.regions[gid - 1]
@@ -59,4 +59,3 @@ while running:
           )
   renderer.renderPresent()
 ```
-
