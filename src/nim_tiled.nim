@@ -7,10 +7,8 @@ import
   strformat,
   os,
   tables,
-  ospaths,
   typeinfo,
   base64,
-  math,
   terminal,
   zippy
 
@@ -383,7 +381,7 @@ proc loadTileset*(theXml: XmlNode): TiledTileset =
         if shape != nil:
           tiledTile.collisionShapes.add shape
 
-    result.tiles.add(tileid, tiledTile)
+    result.tiles[tileid] = tiledTile
 
   let width = theImage.attr("width").parseInt
   let height = theImage.attr("height").parseInt
