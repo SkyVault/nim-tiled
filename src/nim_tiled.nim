@@ -76,7 +76,7 @@ type
     x*, y*, width*, height*, rotation*: float
     id*: int
     name*: string
-    objectType*: string
+    class*: string
     properties*: TiledProperties
     case kind*: TiledObjectKind
     of tkRectangle, tkPoint, tkEllipse:
@@ -109,7 +109,7 @@ type
 
   TiledTile* = object
     tileid*: int
-    tileType*: string
+    class*: string
     animation*: seq[TiledFrame]
     collisionShapes*: seq[TiledCollisionShape]
     properties*: TiledProperties
@@ -157,6 +157,9 @@ type
     tilesets*: seq[TiledTileset]
     layers*: seq[TiledLayer]
     objectGroups*: seq[TiledObjectGroup]
+
+proc objectType*(obj: TiledObject): string {.deprecated: "Use `class` instead.".} = obj.class
+proc tileType*(tile: TiledTile): string {.deprecated: "Use `class` instead.".} = tile.class
 
 const
   ValueMask = 0x1fffffff'u32
@@ -206,7 +209,7 @@ proc `$`*(o: TiledObject): auto =
   result = "TiledObject {\n"
   result &= "   kind: " & $o.kind & "\n"
   result &= "   name: " & o.name & "\n"
-  result &= "   type: " & o.objectType & "\n"
+  result &= "   class: " & o.class & "\n"
   if o.kind == tkTile:
     result &= "   gid: " & $o.gid & "\n"
   result &= "   x: " & $o.x & "\n"
@@ -243,6 +246,11 @@ proc `$`*(t: TiledTileset): auto =
   result &= "   width:" & $t.width & "\n"
   result &= "   height:" & $t.height & "\n"
   result &= "}"
+
+template `??`[T:seq|string](a, b: T): T =
+  ## Return `a` if not empty, otherwise evaluate and return `b`.
+  let t = a
+  if t.len == 0: (b) else: (t)
 
 proc assertWarn(expression: bool, msg: string, color = true): bool =
   result = expression
@@ -309,7 +317,7 @@ proc loadTileset*(theXml: XmlNode): TiledTileset =
 
     var tiledTile = TiledTile(
       tileid: tileid,
-      tileType: tile.attr("type"),
+      class: tile.attr("class") ?? tile.attr("type"),
       properties: newTiledProperties(tile.child("properties")),
       animation: @[]
     )
@@ -601,7 +609,7 @@ proc loadTiledMap*(path: string): TiledMap =
       var hasGid = false
       var gid = 0.TiledGid
       var name = ""
-      var otype = ""
+      var class = ""
       var width = 0.0
       var height = 0.0
       var rotation = 0.0
@@ -618,7 +626,7 @@ proc loadTiledMap*(path: string): TiledMap =
       except: discard
 
       try:
-        otype = objXml.attr("type")
+        class = objXml.attr("class") ?? objXml.attr("type")
       except: discard
 
       try:
@@ -642,8 +650,8 @@ proc loadTiledMap*(path: string): TiledMap =
           let tile = addr tileset.tiles[gid.value - tileset.firstgid]
           properties[] = tile.properties[]
           # Also copy tile type if we don't have our own.
-          if otype == "":
-            otype = tile.tileType
+          if class == "":
+            class = tile.class
       
       # Override with own properties.
       if objXml.child("properties") != nil:
@@ -660,7 +668,7 @@ proc loadTiledMap*(path: string): TiledMap =
             rotation: rotation,
             points: extractPoints(subXml.attr("points")),
             name: name,
-            objectType: otype,
+            class: class,
             properties: properties
           )
 
@@ -671,7 +679,7 @@ proc loadTiledMap*(path: string): TiledMap =
             rotation: rotation,
             points: extractPoints(subXml.attr("points")),
             name: name,
-            objectType: otype,
+            class: class,
             properties: properties
           )
 
@@ -680,7 +688,7 @@ proc loadTiledMap*(path: string): TiledMap =
             kind: tkPoint,
             id: id, x: x, y: y,
             name: name,
-            objectType: otype,
+            class: class,
             properties: properties
           )
 
@@ -694,7 +702,7 @@ proc loadTiledMap*(path: string): TiledMap =
             height: height,
             rotation: rotation,
             name: name,
-            objectType: otype,
+            class: class,
             properties: properties
           )
 
@@ -712,7 +720,7 @@ proc loadTiledMap*(path: string): TiledMap =
             height: height,
             rotation: rotation,
             name: name,
-            objectType: otype,
+            class: class,
             properties: properties
           )
         else:
@@ -723,7 +731,7 @@ proc loadTiledMap*(path: string): TiledMap =
             height: height,
             rotation: rotation,
             name: name,
-            objectType: otype,
+            class: class,
             properties: properties
           )
       
