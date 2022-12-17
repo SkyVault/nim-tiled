@@ -1,6 +1,6 @@
 import ../src/nim_tiled
 import os
-import tables, typeinfo, base64
+import tables
 
 proc writeTiledToText(map: TiledMap): string=
   result = ""
@@ -34,5 +34,5 @@ doAssert(expected == writeTiledToText(loadTiledMap(getAppDir() & "/8x8Base64Zlib
 let map = loadTiledMap(getAppDir() & "/8x8ZlibEmbededTilesheet.tmx")
 doAssert(expected == writeTiledToText(map))
 doAssert(map.objectGroups[0].objects[0].name == "Lemon")
-doAssert(map.objectGroups[0].objects[0].objectType == "Tree")
+doAssert(map.objectGroups[0].objects[0].class == "Tree")
 doAssert(map.layers[0].properties["test"].valueString == "Hello World")
