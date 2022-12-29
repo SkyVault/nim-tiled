@@ -1,9 +1,9 @@
-import os, options
+import os, options, xmlparser, xmltree, streams, strformat, strutils, colors, sugar
 
 type
-  LayerUID = distinct int
-  TileUID = distinct int
-  ObjectUID = distinct int
+  LayerUID = string
+  TileUID = string
+  ObjectUID = string
 
   Percent = range[0..100]
   Milliseconds = float
@@ -81,6 +81,7 @@ type
 
   Orientation {.pure.} = enum
     orthogonal
+    orthographic
     isometric
     staggered
     hexagonal
@@ -128,7 +129,7 @@ type
 
   HAlignment {.pure.} = enum
     left, center, right, justify
-  
+
   VAlignment {.pure.} = enum
     top, center, bottom
 
@@ -139,7 +140,7 @@ type
     polygon
     polyline
     text
-  
+
   Object = object
     id: int
     name, class: string
@@ -198,15 +199,15 @@ type
     axisY
 
   Map = object
-    version, tiledversion, class: string
+    version, tiledVersion, class: string
     orientation: Orientation
     renderOrder: RenderOrder
-    compressionLevel: int
+    compressionLevel = -1
     width, height: int
     tilewidth, tileheight: int
-    hexsidelength: int
-    staggeraxis: Axis
-    staggerindex: int
+    hexSideLength: int
+    staggerAxis: Axis
+    staggerIndex: int
     parallaxOriginX, parallaxOriginY: int
     backgroundColor: string
     nextLayerId: LayerUID
@@ -230,9 +231,136 @@ type
       of tiledError:
         errorMessage: string
 
+proc value[T](self: XmlNode, a: string): T =
+  when T is int:
+    if self.attr(a) != "":
+      return self.attr(a).parseInt()
+  elif T is float:
+    if self.attr(a) != "":
+      return self.attr(a).parseFloat()
+    else:
+      return 0.0
+  elif T is string:
+    return self.attr(a)
+
 proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
   result = LoadResult(kind: tiledError, errorMessage: message)
 
-proc loadTiledMap* (path: string): LoadResult =
+proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
+  tileset.firstGid = node.attr("firstgid")
+  tileset.source = node.attr("source")
+  tileset.name = node.attr("name")
+  tileset.class = node.attr("class")
+  tileset.tilewidth = value[int](node, "tilewidth")
+  tileset.tileheight = value[int](node, "tileheight")
+  tileset.spacing = value[float](node, "spacing")
+  tileset.margin = value[float](node, "margin")
+  tileset.tilecount = value[int](node, "tilecount")
+  tileset.columns = value[int](node, "columns")
+  # tileset.tileOffset = value[int](node, "tileoffset")
+  tileset.objectAlignment =
+    case node.attr("objectalignment"):
+      of "unspecified": unspecified
+      of "topLeft": topLeft
+      of "top": top
+      of "topRight": topRight
+      of "center": center
+      of "right": right
+      of "bottomLeft": bottomLeft
+      of "bottom": bottom
+      of "bottomRight": bottomRight
+      else: unspecified
+
+  tileset.tileRenderSize =
+    case node.attr("tileRenderSize")
+      of "tile": tile
+      of "grid": grid
+      else: tile
+
+  tileset.fillMode =
+    case node.attr("fillMode")
+      of "stretch": stretch
+      of "preserveAspectFit": preserveAspectFit
+      else: stretch
+
+  # TODO: image
+
+  # TODO: grid
+
+  # TODO: properties
+
+  # TODO: wangsets
+
+proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
+  result.firstGid = node.attr("firstgid")
+  result.source = node.attr("source")
+
+  if result.source != "" and loadsource:
+    let tilesetNode = readFile(path.parentDir().joinPath(
+        result.source)).newStringStream().parseXml()
+    result.loadTilesetFields(tilesetNode)
+  else:
+    result.loadTilesetFields(node)
+
+proc buildTilemap(node: XmlNode, path: string): Map =
+  result = Map()
+  result.version = node.attr "version"
+  result.tiledVersion = node.attr "tiledversion"
+  result.class = node.attr "class"
+
+  result.infinite = node.attr("infinite") == "1"
+
+  result.width = node.attr("width").parseInt
+  result.height = node.attr("width").parseInt
+  result.tilewidth = node.attr("tilewidth").parseInt
+  result.tileheight = node.attr("tileheight").parseInt
+
+  result.orientation =
+    case node.attr("orientation"):
+      of "orthogonal": orthogonal
+      of "orthographic": orthographic
+      of "isometric": isometric
+      of "staggered": staggered
+      of "hexagonal": hexagonal
+      else: orthogonal
+
+  result.renderOrder =
+    case node.attr("renderorder"):
+      of "right-down": rightDown
+      of "right-up": leftDown
+      of "left-up": rightUp
+      of "left-down": leftUp
+      else: rightDown
+
+  # TODO: Compression level
+
+  result.nextLayerId = node.attr("nextlayerid")
+  result.nextObjectid = node.attr("nextobjectid")
+
+  result.hexSideLength = value[int](node, "hexsidelength")
+  result.staggerIndex = value[int](node, "staggerindex")
+
+  result.parallaxOriginX = value[int](node, "parallaxoriginx")
+  result.parallaxOriginY = value[int](node, "parallaxoriginy")
+  result.backgroundColor = value[string](node, "backgroundcolor")
+
+  # TODO: load custom map properties
+
+  for item in node.items:
+    case item.tag:
+      of "tileset":
+        result.tilesets.add buildTileset(item, path)
+      else:
+        echo "Unhandled tag: ", item.tag
+
+proc loadTiledMap*(path: string): LoadResult =
   if not fileExists(path):
     return errorResult(tiledErrorFileNotFound, "File does not exist.")
+
+  result = LoadResult(
+    kind: tiledOk,
+    tiledMap: buildTilemap(
+      readFile(path).newStringStream().parseXml(),
+      path
+    )
+  )
