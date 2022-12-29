@@ -106,6 +106,7 @@ type
     preserveAspectFit
 
   Tileset = object
+    version, tiledversion: string
     firstGid: TileUID
     source: string
     name, class: string
@@ -246,8 +247,18 @@ proc value[T](self: XmlNode, a: string): T =
 proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
   result = LoadResult(kind: tiledError, errorMessage: message)
 
+proc buildImage(node: XmlNode): Image =
+  result.format = node.attr("format")
+  result.trans = node.attr("trans")
+  result.source = node.attr("source")
+  result.width = value[float](node, "width")
+  result.height = value[float](node, "height")
+
 proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   tileset.firstGid = node.attr("firstgid")
+  if tileset.firstGid == "":
+    tileset.firstGid = "1"
+
   tileset.source = node.attr("source")
   tileset.name = node.attr("name")
   tileset.class = node.attr("class")
@@ -283,7 +294,12 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
       of "preserveAspectFit": preserveAspectFit
       else: stretch
 
-  # TODO: image
+  for child in node:
+    case child.tag
+      of "image":
+        tileset.image = some buildImage(child)
+      else:
+        echo "Unhandled tileset child tag: " & child.tag
 
   # TODO: grid
 
