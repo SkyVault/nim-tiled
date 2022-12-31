@@ -232,7 +232,9 @@ type
       of tiledError:
         errorMessage: string
 
-proc value[T](self: XmlNode, a: string): T =
+proc value[T](self: XmlNode, a: string, v: T): T =
+  result = v
+
   when T is int:
     if self.attr(a) != "":
       return self.attr(a).parseInt()
@@ -241,6 +243,11 @@ proc value[T](self: XmlNode, a: string): T =
       return self.attr(a).parseFloat()
     else:
       return 0.0
+  elif T is bool:
+    if self.attr(a) == "" or self.attr(a) == "0":
+      return false
+    else:
+      return true
   elif T is string:
     return self.attr(a)
 
@@ -251,8 +258,8 @@ proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
   result.trans = node.attr("trans")
   result.source = node.attr("source")
-  result.width = value[float](node, "width")
-  result.height = value[float](node, "height")
+  result.width = value[float](node, "width", 0.0)
+  result.height = value[float](node, "height", 0.0)
 
 proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   tileset.firstGid = node.attr("firstgid")
@@ -262,12 +269,12 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   tileset.source = node.attr("source")
   tileset.name = node.attr("name")
   tileset.class = node.attr("class")
-  tileset.tilewidth = value[int](node, "tilewidth")
-  tileset.tileheight = value[int](node, "tileheight")
-  tileset.spacing = value[float](node, "spacing")
-  tileset.margin = value[float](node, "margin")
-  tileset.tilecount = value[int](node, "tilecount")
-  tileset.columns = value[int](node, "columns")
+  tileset.tilewidth = value[int](node, "tilewidth", 0)
+  tileset.tileheight = value[int](node, "tileheight", 0)
+  tileset.spacing = value[float](node, "spacing", 0.0)
+  tileset.margin = value[float](node, "margin", 0.0)
+  tileset.tilecount = value[int](node, "tilecount", 0)
+  tileset.columns = value[int](node, "columns", 0)
   # tileset.tileOffset = value[int](node, "tileoffset")
   tileset.objectAlignment =
     case node.attr("objectalignment"):
@@ -318,6 +325,29 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
   else:
     result.loadTilesetFields(node)
 
+proc buildLayer(node: XmlNode): Layer =
+  result.kind = tiles
+  result.id = node.attr("id")
+  result.name = node.attr("name")
+  result.class = node.attr("class")
+  result.x = value[float](node, "x", 0.0)
+  result.y = value[float](node, "y", 0.0)
+  result.width = value[float](node, "width", 0.0)
+  result.height = value[float](node, "height", 0.0)
+  result.visible = if node.attr("visible") == "": true else: value[bool](node,
+      "visible", true)
+  result.tintcolor = node.attr("tintcolor")
+  result.offsetx = value[float](node, "offsetx", 0.0)
+  result.offsety = value[float](node, "offsety", 0.0)
+  result.parallaxx = value[float](node, "parallaxx", 0.0)
+  result.parallaxy = value[float](node, "parallaxy", 0.0)
+
+  # TODO: Custom properties
+
+  # TODO: Data
+
+  case result.kind
+
 proc buildTilemap(node: XmlNode, path: string): Map =
   result = Map()
   result.version = node.attr "version"
@@ -353,21 +383,20 @@ proc buildTilemap(node: XmlNode, path: string): Map =
   result.nextLayerId = node.attr("nextlayerid")
   result.nextObjectid = node.attr("nextobjectid")
 
-  result.hexSideLength = value[int](node, "hexsidelength")
-  result.staggerIndex = value[int](node, "staggerindex")
+  result.hexSideLength = value[int](node, "hexsidelength", 0)
+  result.staggerIndex = value[int](node, "staggerindex", 0)
 
-  result.parallaxOriginX = value[int](node, "parallaxoriginx")
-  result.parallaxOriginY = value[int](node, "parallaxoriginy")
-  result.backgroundColor = value[string](node, "backgroundcolor")
+  result.parallaxOriginX = value[int](node, "parallaxoriginx", 0)
+  result.parallaxOriginY = value[int](node, "parallaxoriginy", 0)
+  result.backgroundColor = value[string](node, "backgroundcolor", "")
 
   # TODO: load custom map properties
 
   for item in node.items:
     case item.tag:
-      of "tileset":
-        result.tilesets.add buildTileset(item, path)
-      else:
-        echo "Unhandled tag: ", item.tag
+      of "tileset": result.tilesets.add buildTileset(item, path)
+      of "layer": result.layers.add buildLayer(item)
+      else: echo "Unhandled tag: ", item.tag
 
 proc loadTiledMap*(path: string): LoadResult =
   if not fileExists(path):
