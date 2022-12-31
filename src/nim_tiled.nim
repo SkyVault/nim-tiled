@@ -1,8 +1,9 @@
-import os, options, xmlparser, xmltree, streams, strformat, strutils, colors, sugar
+import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
+    sugar, sequtils
 
 type
   LayerUID = string
-  TileUID = string
+  TileUID = int
   ObjectUID = string
 
   Percent = range[0..100]
@@ -17,13 +18,14 @@ type
     csv
 
   Compression {.pure.} = enum
+    none
     gzip
     zlib
     zstd
 
   Data = object
-    encoding: Encoding
-    compression: Compression
+    encoding: Encoding = none
+    compression: Compression = none
     tiles: seq[Tile]
     chunks: seq[Chunk]
 
@@ -181,12 +183,10 @@ type
     offsetx, offsety: float
     parallaxx, parallaxy: float
     properties: Option[Properties]
-    data: Option[Data]
 
     case kind: LayerKind
       of tiles:
-        chunks: seq[Chunk]
-        tiles: seq[Tile]
+        data: Data
       of objects:
         objects: seq[Object]
       of image:
@@ -214,6 +214,8 @@ type
     nextLayerId: LayerUID
     nextObjectid: ObjectUID
     infinite: bool
+
+    properties: Option[Properties]
 
     tilesets: seq[Tileset]
     layers: seq[Layer]
@@ -245,9 +247,9 @@ proc buildImage(node: XmlNode): Image =
   result.height = value[float](node, "height", 0.0)
 
 proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
-  tileset.firstGid = node.attr("firstgid")
-  if tileset.firstGid == "":
-    tileset.firstGid = "1"
+  tileset.firstGid =
+    if node.attr("firstgid") == "": 1
+    else: node.attr("firstgid").parseInt
 
   tileset.source = node.attr("source")
   tileset.name = node.attr("name")
@@ -298,7 +300,10 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   # TODO: wangsets
 
 proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
-  result.firstGid = node.attr("firstgid")
+  result.firstGid =
+    if node.attr("firstgid") == "": 1
+    else: node.attr("firstgid").parseInt
+
   result.source = node.attr("source")
 
   if result.source != "" and loadsource:
@@ -307,6 +312,31 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
     result.loadTilesetFields(tilesetNode)
   else:
     result.loadTilesetFields(node)
+
+proc buildProperties(props: XmlNode): Properties =
+  discard
+
+proc buildData(data: XmlNode): Data =
+  case data.attr("encoding")
+    of "base64": result.encoding = base64
+    of "csv": result.encoding = csv
+    else:
+      let en = data.attr("encoding")
+      echo &"Unexpected encoding '{en}' for data."
+
+  case data.attr("compression"):
+    of "gzip": result.compression = gzip
+    of "zlib": result.compression = zlib
+    of "zstd": result.compression = zstd
+    else: discard
+
+  # TODO: Handle base64 encoding
+
+  if result.encoding == csv:
+    result.tiles = data.innerText
+      .split({',', '\n'})
+      .filterIt(it != "")
+      .map(it => Tile(parseInt(it)))
 
 proc buildLayer(node: XmlNode): Layer =
   result.kind = tiles
@@ -325,11 +355,15 @@ proc buildLayer(node: XmlNode): Layer =
   result.parallaxx = value[float](node, "parallaxx", 0.0)
   result.parallaxy = value[float](node, "parallaxy", 0.0)
 
-  # TODO: Custom properties
+  for subNode in node:
+    case subNode.tag
+      of "data":
+        result.data = buildData(subNode)
+      of "properties":
+        result.properties = buildProperties(subNode).some
+      else:
+        echo &"Unexpected child tag for layer: {subNode.tag}"
 
-  # TODO: Data
-
-  # case result.kind
 
 proc buildTilemap(node: XmlNode, path: string): Map =
   result = Map()
@@ -375,10 +409,11 @@ proc buildTilemap(node: XmlNode, path: string): Map =
 
   # TODO: load custom map properties
 
-  for item in node.items:
+  for item in node:
     case item.tag:
       of "tileset": result.tilesets.add buildTileset(item, path)
       of "layer": result.layers.add buildLayer(item)
+      of "properties": result.properties = buildProperties(item).some
       else: echo "Unhandled tag: ", item.tag
 
 type
@@ -392,9 +427,9 @@ type
   LoadResult = object
     case kind: LoadResultKind
       of tiledOk:
-        tiledMap: Map
+        tiledMap*: Map
       of tiledError:
-        errorMessage: string
+        errorMessage*: string
 
 proc kind*(res: LoadResult): LoadResultKind =
   res.kind
