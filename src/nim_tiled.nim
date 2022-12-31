@@ -346,7 +346,7 @@ proc buildLayer(node: XmlNode): Layer =
 
   # TODO: Data
 
-  case result.kind
+  # case result.kind
 
 proc buildTilemap(node: XmlNode, path: string): Map =
   result = Map()
