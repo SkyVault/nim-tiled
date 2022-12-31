@@ -218,20 +218,6 @@ type
     tilesets: seq[Tileset]
     layers: seq[Layer]
 
-  LoadResultKind = enum
-    tiledOk
-    tiledError
-
-  LoadErrorKind = enum
-    tiledErrorFileNotFound
-
-  LoadResult = object
-    case kind: LoadResultKind
-      of tiledOk:
-        tiledMap: Map
-      of tiledError:
-        errorMessage: string
-
 proc value[T](self: XmlNode, a: string, v: T): T =
   result = v
 
@@ -250,9 +236,6 @@ proc value[T](self: XmlNode, a: string, v: T): T =
       return true
   elif T is string:
     return self.attr(a)
-
-proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
-  result = LoadResult(kind: tiledError, errorMessage: message)
 
 proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
@@ -397,6 +380,33 @@ proc buildTilemap(node: XmlNode, path: string): Map =
       of "tileset": result.tilesets.add buildTileset(item, path)
       of "layer": result.layers.add buildLayer(item)
       else: echo "Unhandled tag: ", item.tag
+
+type
+  LoadResultKind = enum
+    tiledOk
+    tiledError
+
+  LoadErrorKind = enum
+    tiledErrorFileNotFound
+
+  LoadResult = object
+    case kind: LoadResultKind
+      of tiledOk:
+        tiledMap: Map
+      of tiledError:
+        errorMessage: string
+
+proc kind*(res: LoadResult): LoadResultKind =
+  res.kind
+
+func isOk*(res: LoadResult): bool = res.kind == tiledOk
+
+func orDefault*(res: LoadResult): Map =
+  if res.kind == tiledOk:
+    result = res.tiledMap
+
+proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
+  result = LoadResult(kind: tiledError, errorMessage: message)
 
 proc loadTiledMap*(path: string): LoadResult =
   if not fileExists(path):
