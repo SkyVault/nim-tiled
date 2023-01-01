@@ -11,8 +11,16 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 234.33333333333331,
-                "y": 215.99999999999997
+                "x": 236.33333333333331,
+                "y": 274
+            }
+        },
+        "maps/infinite-csv.tmx": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 414,
+                "y": 80
             }
         }
     },
@@ -26,5 +34,9 @@
     "project": "maps.tiled-project",
     "recentFiles": [
     ],
-    "tileset.lastUsedFormat": "tsx"
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
 }
