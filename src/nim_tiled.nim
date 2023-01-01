@@ -1,5 +1,5 @@
 import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
-    sugar, sequtils
+    print, sugar, sequtils, algorithm
 
 type
   LayerUID* = string
@@ -110,7 +110,7 @@ type
 
   Tileset* = object
     version, tiledversion: string
-    firstGid: TileUID
+    firstGid: TileUID = 0
 
     source: string
     name, class: string
@@ -234,6 +234,8 @@ proc tiledversion*(it: Tileset|Map): auto = it.tiledversion
 proc firstGid*(it: Tileset): auto = it.firstGid
 proc source*(it: Tileset): auto = it.source
 
+## Utility functions
+
 proc value[T](self: XmlNode, a: string, v: T): T =
   result = v
 
@@ -253,6 +255,29 @@ proc value[T](self: XmlNode, a: string, v: T): T =
   elif T is string:
     return self.attr(a)
 
+proc tilesetForTileId*(map: Map, tileId: Tile): TileUID =
+  result = 0
+
+  # first sort tilesets by their firstGid
+  # iterate highest to lowest
+  # break when tileset.firstGid < tileId and return tileset.firstGid
+  var tilesets = map.tilesets
+  tilesets.sort(
+    proc(a, b: Tileset): auto = cmp(a.firstGid, b.firstGid)
+  )
+
+  print(tilesets)
+
+  for i in 0..<len(tilesets):
+    let ts = tilesets[i]
+
+    if tileId > ts.firstGid:
+      result = ts.firstGid
+
+
+
+## Builders
+
 proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
   result.trans = node.attr("trans")
@@ -261,9 +286,10 @@ proc buildImage(node: XmlNode): Image =
   result.height = value[float](node, "height", 0.0)
 
 proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
-  tileset.firstGid =
-    if node.attr("firstgid") == "": 1
-    else: node.attr("firstgid").parseInt
+  if tileset.firstGid == 0:
+    tileset.firstGid =
+      if node.attr("firstgid") == "": 1
+      else: node.attr("firstgid").parseInt
 
   tileset.source = node.attr("source")
   tileset.name = node.attr("name")
