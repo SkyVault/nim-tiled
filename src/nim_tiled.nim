@@ -9,7 +9,7 @@ type
   Percent* = range[0..100]
   Milliseconds* = float
 
-  Vec2* = tuple[x, y: float]
+  Vec2 = tuple[x, y: float]
   Grid* = tuple[orientation: Orientation, width, height: float]
 
   Encoding* {.pure.} = enum
