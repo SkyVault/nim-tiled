@@ -378,7 +378,6 @@ proc buildLayer(node: XmlNode): Layer =
       else:
         echo &"Unexpected child tag for layer: {subNode.tag}"
 
-
 proc buildTilemap(node: XmlNode, path: string): Map =
   result = Map()
   result.version = node.attr "version"
