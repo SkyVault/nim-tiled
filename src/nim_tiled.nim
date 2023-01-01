@@ -180,7 +180,8 @@ type
     id: LayerUID
     name, class: string
 
-    x*, y*, width*, height*: float
+    x*, y*: float
+    width*, height*: int
     opacity*: float
     visible*: bool
     tintcolor*: string
@@ -403,8 +404,8 @@ proc buildLayer(node: XmlNode): Layer =
   result.class = node.attr("class")
   result.x = value[float](node, "x", 0.0)
   result.y = value[float](node, "y", 0.0)
-  result.width = value[float](node, "width", 0.0)
-  result.height = value[float](node, "height", 0.0)
+  result.width = value[int](node, "width", 0)
+  result.height = value[int](node, "height", 0)
   result.visible = if node.attr("visible") == "": true else: value[bool](node,
       "visible", true)
   result.tintcolor = node.attr("tintcolor")
