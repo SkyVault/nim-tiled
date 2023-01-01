@@ -330,6 +330,17 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
 proc buildProperties(props: XmlNode): Properties =
   discard
 
+proc buildTiles(csv: string): seq[Tile] =
+  csv.split({',', '\n'}).filterIt(it != "").map(it => Tile(parseInt(it)))
+
+proc buildChunk(node: XmlNode, encoding: Encoding,
+    compression: Compression): Chunk =
+  result.x = node.attr("x").parseFloat
+  result.y = node.attr("y").parseFloat
+  result.width = node.attr("width").parseFloat
+  result.height = node.attr("height").parseFloat
+  result.tiles = node.innerText.buildTiles()
+
 proc buildData(data: XmlNode): Data =
   case data.attr("encoding")
     of "base64": result.encoding = base64
@@ -345,12 +356,20 @@ proc buildData(data: XmlNode): Data =
     else: discard
 
   # TODO: Handle base64 encoding
+  var hasChunk = false
 
-  if result.encoding == csv:
-    result.tiles = data.innerText
-      .split({',', '\n'})
-      .filterIt(it != "")
-      .map(it => Tile(parseInt(it)))
+  for node in data:
+    if node.kind == xnElement:
+      case node.tag
+        of "chunk":
+          hasChunk = true
+          result.chunks.add buildChunk(node, result.encoding,
+              result.compression)
+        of "tile":
+          echo "WIP: node 'tile' not handled for data."
+          discard
+    elif node.kind == xnText:
+      result.tiles = node.innerText.buildTiles()
 
 proc buildLayer(node: XmlNode): Layer =
   result.kind = tiles
