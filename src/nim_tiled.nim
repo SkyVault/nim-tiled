@@ -272,7 +272,7 @@ proc tilesetForTileId*(map: Map, tileId: Tile): TileUID =
   for i in 0..<len(tilesets):
     let ts = tilesets[i]
 
-    if tileId > ts.firstGid:
+    if tileId >= ts.firstGid:
       result = ts.firstGid
 
 
