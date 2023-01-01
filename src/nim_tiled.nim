@@ -468,9 +468,11 @@ proc kind*(res: LoadResult): LoadResultKind =
 
 func isOk*(res: LoadResult): bool = res.kind == tiledOk
 
-func orDefault*(res: LoadResult): Map =
+proc orDefault*(res: LoadResult): Map =
   if res.kind == tiledOk:
     result = res.tiledMap
+  else:
+    echo res.errorMessage
 
 proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
   result = LoadResult(kind: tiledError, errorMessage: message)
