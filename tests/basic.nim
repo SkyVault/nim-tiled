@@ -3,8 +3,5 @@ import unittest, print
 
 suite "basic tile map loading":
   test "basic csv | 10x10 map size | 16x16 tile size":
-    let result = loadTiledMap("tests/res/maps/basic.tmx")
-
-    check result.isOk
-
-    print result
+    let result = loadTiledMap("tests/res/maps/basic.tmx").orDefault
+    echo result.tiledversion

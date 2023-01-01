@@ -2,93 +2,94 @@ import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
     sugar, sequtils
 
 type
-  LayerUID = string
-  TileUID = int
-  ObjectUID = string
+  LayerUID* = string
+  TileUID* = int
+  ObjectUID* = string
 
-  Percent = range[0..100]
-  Milliseconds = float
+  Percent* = range[0..100]
+  Milliseconds* = float
 
-  Vec2 = tuple[x, y: float]
-  Grid = tuple[orientation: Orientation, width, height: float]
+  Vec2* = tuple[x, y: float]
+  Grid* = tuple[orientation: Orientation, width, height: float]
 
-  Encoding {.pure.} = enum
+  Encoding* {.pure.} = enum
     none
     base64
     csv
 
-  Compression {.pure.} = enum
+  Compression* {.pure.} = enum
     none
     gzip
     zlib
     zstd
 
-  Data = object
-    encoding: Encoding = none
-    compression: Compression = none
-    tiles: seq[Tile]
-    chunks: seq[Chunk]
+  Data* = object
+    encoding*: Encoding = none
+    compression*: Compression = none
+    tiles*: seq[Tile]
+    chunks*: seq[Chunk]
 
-  Properties = object
+  Properties* = object
 
-  Frame = object
-    tileid: string
-    duration: Milliseconds
+  Frame* = object
+    tileid*: string
+    duration*: Milliseconds
 
-  Animation = seq[Frame]
+  Animation* = seq[Frame]
 
-  Wangcolor = object
-    name, class, color, tile: string
-    probability: Percent
+  Wangcolor* = object
+    name, class, color*, tile*: string
+    probability*: Percent
 
-  Wangtile = object
-    tileid, wangid: string
-    hflip, vflip, dflip: bool
+  Wangtile* = object
+    tileid*, wangid*: string
+    hflip*, vflip*, dflip*: bool
 
-  Wangset = object
-    name, class, tile: string
-    properties: Option[Properties]
-    wangcolors: seq[Wangcolor] # TODO: Assert max length of 255
-    wangtiles: seq[Wangtile]
+  Wangset* = object
+    name, class, tile*: string
+    properties*: Option[Properties]
+    wangcolors*: seq[Wangcolor] # TODO: Assert max length of 255
+    wangtiles*: seq[Wangtile]
 
-  Wangsets = seq[Wangset]
+  Wangsets* = seq[Wangset]
 
-  Transformations = object
-    hflip, vflip, rotate, preferuntransformed: bool
+  Transformations* = object
+    hflip*, vflip*, rotate*, preferuntransformed*: bool
 
-  TilesetTile = object
+  TilesetTile* = object
     id: string
     class: string
-    probability: Percent
-    x, y, width, height: float
-    properties: Option[Properties]
-    image: Option[Image]
-    animation: Option[Animation]
 
-  Image = object
-    format: string
+    probability*: Percent
+    x*, y*, width*, height*: float
+    properties*: Option[Properties]
+    image*: Option[Image]
+    animation*: Option[Animation]
+
+  Image* = object
+    format*: string
     # id: string - used by some versions of Tiled java. Depricated and unsupported
-    source: string
-    trans: string
-    width, height: float
+    source*: string
+    trans*: string
+    width*, height*: float
 
-    data: Option[Data]
-    transformations: Option[Transformations]
+    data*: Option[Data]
+    transformations*: Option[Transformations]
 
-  RenderOrder {.pure.} = enum
+  RenderOrder* {.pure.} = enum
     rightDown
     rightUp
     leftDown
     leftUp
 
-  Orientation {.pure.} = enum
+  Orientation* {.pure.} = enum
     orthogonal
     orthographic
     isometric
     staggered
     hexagonal
 
-  ObjectAlignment {.pure.} = enum
+  ObjectAlignment* {.pure.} = enum
     unspecified
     topLeft
     top
@@ -99,44 +100,46 @@ type
     bottom
     bottomRight
 
-  TileRenderSize {.pure.} = enum
+  TileRenderSize* {.pure.} = enum
     tile
     grid
 
-  FillMode {.pure.} = enum
+  FillMode* {.pure.} = enum
     stretch
     preserveAspectFit
 
-  Tileset = object
+  Tileset* = object
     version, tiledversion: string
     firstGid: TileUID
+
     source: string
     name, class: string
-    tilewidth, tileheight: int
-    spacing, margin: float
-    tilecount, columns: int
-    tileOffset: Vec2
-    objectAlignment: ObjectAlignment
-    tileRenderSize: TileRenderSize
-    fillMode: FillMode
-    image: Option[Image]
-    grid: Option[Grid]
-    properties: Option[Properties]
-    wangsets: Option[Wangsets]
 
-  Tile = TileUID
+    tilewidth*, tileheight*: int
+    spacing*, margin*: float
+    tilecount*, columns*: int
+    tileOffset*: Vec2
+    objectAlignment*: ObjectAlignment
+    tileRenderSize*: TileRenderSize
+    fillMode*: FillMode
+    image*: Option[Image]
+    grid*: Option[Grid]
+    properties*: Option[Properties]
+    wangsets*: Option[Wangsets]
 
-  Chunk = object
-    x, y, width, height: float
-    tiles: seq[Tile]
+  Tile* = TileUID
 
-  HAlignment {.pure.} = enum
+  Chunk* = object
+    x*, y*, width*, height*: float
+    tiles*: seq[Tile]
+
+  HAlignment* {.pure.} = enum
     left, center, right, justify
 
-  VAlignment {.pure.} = enum
+  VAlignment* {.pure.} = enum
     top, center, bottom
 
-  ObjectKind {.pure.} = enum
+  ObjectKind* {.pure.} = enum
     obj
     ellipse
     point
@@ -147,27 +150,27 @@ type
   Object = object
     id: int
     name, class: string
-    x, y, width, height: float
-    rotation: float
-    gid: TileUID
-    visible: bool
-    templateFile: Option[string] # Links to a separate template file
+    x*, y*, width*, height*: float
+    rotation*: float
+    gid*: TileUID
+    visible*: bool
+    templateFile*: Option[string] # Links to a separate template file
 
-    case kind: ObjectKind
+    case kind*: ObjectKind
       of obj: discard
       of ellipse: discard
       of point: discard
       of polygon, polyline:
-        points: seq[Vec2]
+        points*: seq[Vec2]
       of text:
-        fontfamily: string
-        pixelsize: int
-        wrap, bold, italic, underline, strikeout, kerning: bool
-        color: string
-        halign: HAlignment
-        valign: VAlignment
+        fontfamily*: string
+        pixelsize*: int
+        wrap*, bold*, italic*, underline*, strikeout*, kerning*: bool
+        color*: string
+        halign*: HAlignment
+        valign*: VAlignment
 
-  LayerKind {.pure.} = enum
+  LayerKind* = enum
     tiles
     objects
     image
@@ -176,49 +179,60 @@ type
   Layer = object
     id: LayerUID
     name, class: string
-    x, y, width, height: float
-    opacity: float
-    visible: bool
-    tintcolor: string
-    offsetx, offsety: float
-    parallaxx, parallaxy: float
-    properties: Option[Properties]
 
-    case kind: LayerKind
+    x*, y*, width*, height*: float
+    opacity*: float
+    visible*: bool
+    tintcolor*: string
+    offsetx*, offsety*: float
+    parallaxx*, parallaxy*: float
+    properties*: Option[Properties]
+
+    case kind*: LayerKind
       of tiles:
-        data: Data
+        data*: Data
       of objects:
-        objects: seq[Object]
+        objects*: seq[Object]
       of image:
         repeatx, repeaty: bool
-        image: Option[Image]
+        image*: Option[Image]
       of group:
-        layers: seq[Layer]
+        layers*: seq[Layer]
 
   Axis = enum
     axisX
     axisY
 
   Map = object
-    version, tiledVersion, class: string
-    orientation: Orientation
-    renderOrder: RenderOrder
-    compressionLevel = -1
-    width, height: int
-    tilewidth, tileheight: int
-    hexSideLength: int
-    staggerAxis: Axis
-    staggerIndex: int
-    parallaxOriginX, parallaxOriginY: int
-    backgroundColor: string
-    nextLayerId: LayerUID
-    nextObjectid: ObjectUID
-    infinite: bool
+    version, tiledversion, class: string
+    orientation*: Orientation
+    renderOrder*: RenderOrder
+    compressionLevel* = -1
+    width*, height*: int
+    tilewidth*, tileheight*: int
+    hexSideLength*: int
+    staggerAxis*: Axis
+    staggerIndex*: int
+    parallaxOriginX*, parallaxOriginY*: int
+    backgroundColor*: string
+    nextLayerId*: LayerUID
+    nextObjectid*: ObjectUID
+    infinite*: bool
 
-    properties: Option[Properties]
+    properties*: Option[Properties]
 
-    tilesets: seq[Tileset]
-    layers: seq[Layer]
+    tilesets*: seq[Tileset]
+    layers*: seq[Layer]
+
+proc id*(it: Layer|Object|TilesetTile): auto = it.id
+proc name*(it: Layer|Object|Tileset|Wangset|Wangcolor): auto = it.name
+proc class*(it: Layer|Object|Map|Tileset|TilesetTile|Wangset|Wangcolor): auto = it.class
+
+proc version*(it: Tileset|Map): auto = it.version
+proc tiledversion*(it: Tileset|Map): auto = it.tiledversion
+
+proc firstGid*(it: Tileset): auto = it.firstGid
+proc source*(it: Tileset): auto = it.source
 
 proc value[T](self: XmlNode, a: string, v: T): T =
   result = v
