@@ -1,5 +1,5 @@
 import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
-    print, sugar, sequtils, algorithm
+    print, sugar, sequtils, algorithm, tables
 
 type
   LayerUID* = string
@@ -224,6 +224,8 @@ type
     tilesets*: seq[Tileset]
     layers*: seq[Layer]
 
+    firstGidToTilesetName: Table[TileUID, string]
+
 proc id*(it: Layer|Object|TilesetTile): auto = it.id
 proc name*(it: Layer|Object|Tileset|Wangset|Wangcolor): auto = it.name
 proc class*(it: Layer|Object|Map|Tileset|TilesetTile|Wangset|Wangcolor): auto = it.class
@@ -266,14 +268,11 @@ proc tilesetForTileId*(map: Map, tileId: Tile): TileUID =
     proc(a, b: Tileset): auto = cmp(a.firstGid, b.firstGid)
   )
 
-  print(tilesets)
-
   for i in 0..<len(tilesets):
     let ts = tilesets[i]
 
     if tileId > ts.firstGid:
       result = ts.firstGid
-
 
 
 ## Builders
@@ -473,6 +472,14 @@ proc buildTilemap(node: XmlNode, path: string): Map =
       of "layer": result.layers.add buildLayer(item)
       of "properties": result.properties = buildProperties(item).some
       else: echo "Unhandled tag: ", item.tag
+
+  result.firstGidToTilesetName = initTable[TileUID, string]()
+
+  for tileset in result.tilesets:
+    result.firstGidToTilesetName[tileset.firstGid] = tileset.name
+
+proc getTilesetNameGivenFirstGid*(map: Map, uid: TileUID): string =
+  map.firstGidToTilesetName[uid]
 
 type
   LoadResultKind = enum

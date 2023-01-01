@@ -13,3 +13,7 @@ suite "finite maps":
 
     check tilesetForTileId(result, Tile(10)) == Tile(1)
     check tilesetForTileId(result, Tile(300)) == Tile(257)
+
+    check result.getTilesetNameGivenFirstGid(Tile(1)) == "tileset"
+    check result.getTilesetNameGivenFirstGid(tilesetForTileId(result, Tile(
+        300))) == "tileset2"
