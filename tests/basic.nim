@@ -44,3 +44,5 @@ suite "finite maps":
 
   test "objects":
     let result = loadTiledMap("tests/res/maps/objects.tmx").orDefault
+
+    print(result)

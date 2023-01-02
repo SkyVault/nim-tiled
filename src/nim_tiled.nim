@@ -174,6 +174,7 @@ type
     gid*: TileUID
     visible*: bool
     templateFile*: Option[string] # Links to a separate template file
+    properties*: Properties
 
     case kind*: ObjectKind
       of obj: discard
@@ -182,6 +183,7 @@ type
       of polygon, polyline:
         points*: seq[Vec2]
       of text:
+        text*: string
         fontfamily*: string
         pixelsize*: int
         wrap*, bold*, italic*, underline*, strikeout*, kerning*: bool
@@ -268,6 +270,13 @@ func tileAt*(layer: Layer, x, y: int): Tile =
 
 ## Utility functions
 
+proc extractPoints*(text: string): seq[tuple[x, y: float]] =
+  ## extract points ala: 0,0 32,29 0,29
+  result = collect:
+    for pair in text.split {' '}:
+      let coords = pair.split {','}
+      (coords[0].parseFloat, coords[1].parseFloat)
+
 proc value[T](self: XmlNode, a: string, v: T): T =
   result = v
 
@@ -324,17 +333,17 @@ proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
   result.trans = node.attr("trans")
   result.source = node.attr("source")
-  result.width = value(node, "width", 0.0)
-  result.height = value(node, "height", 0.0)
+  result.width = node.value("width", 0.0)
+  result.height = node.value("height", 0.0)
 
 proc buildTilesetTile(node: XmlNode): TilesetTile =
   result.id = node.attr("id")
   result.class = node.attr("class")
-  result.probability = Percent((value(node, "x", 0.0) * 100.0).int)
-  result.x = value(node, "x", 0.0)
-  result.y = value(node, "y", 0.0)
-  result.width = value(node, "width", 0.0)
-  result.height = value(node, "height", 0.0)
+  result.probability = Percent((node.value("x", 0.0) * 100.0).int)
+  result.x = node.value("x", 0.0)
+  result.y = node.value("y", 0.0)
+  result.width = node.value("width", 0.0)
+  result.height = node.value("height", 0.0)
 
   for child in node:
     case child.tag:
@@ -456,21 +465,79 @@ proc buildData(data: XmlNode): Data =
     elif node.kind == xnText:
       result.tiles = node.innerText.buildTiles()
 
+proc loadTextFields(text: var Object, node: XmlNode) =
+  text.kind = text
+  text.pixelsize = node.value("pixelsize", 0)
+  text.wrap = node.value("wrap", false)
+  text.color = node.attr("color")
+  text.bold = node.value("bold", false)
+  text.italic = node.value("italic", false)
+  text.underline = node.value("underline", false)
+  text.strikeout = node.value("strikeout", false)
+  text.kerning = node.value("kerning", true)
+  text.halign =
+    case node.attr("halign")
+      of "left": left
+      of "center": center
+      of "right": right
+      of "justify": justify
+      else: left
+  text.valign =
+    case node.attr("halign")
+      of "top": top
+      of "center": center
+      of "bottom": bottom
+      else: top
+  text.text = node.innerText
+
+proc buildObject(node: XmlNode): Object =
+  result.id = node.value("id", 0)
+  result.name = node.attr("name")
+  result.class = node.attr("class")
+  result.x = node.value("x", 0.0)
+  result.y = node.value("y", 0.0)
+  result.width = node.value("width", 0.0)
+  result.height = node.value("height", 0.0)
+  result.rotation = node.value("rotation", 0.0)
+  result.gid = node.value("gid", 0)
+  result.visible = if node.attr("visible") == "": true else: node.value(
+      "visible", true)
+
+  # TODO: handle template file
+
+  for child in node:
+    case child.tag
+      of "properties": result.properties = buildProperties(child)
+      of "ellipse": result.kind = ellipse
+      of "point": result.kind = point
+      of "polygon":
+        result.kind = polygon
+        result.points = child.attr("points").extractPoints()
+
+      of "polyline":
+        result.kind = polyline
+        result.points = child.attr("points").extractPoints()
+
+      of "text":
+        result.loadTextFields(child)
+
+      else: echo "Unexpected tag for object child: " & child.tag
+
 proc loadBasicLayerFields(layer: var Layer, node: XmlNode) =
   layer.id = node.attr("id")
   layer.name = node.attr("name")
   layer.class = node.attr("class")
-  layer.x = value(node, "x", 0.0)
-  layer.y = value(node, "y", 0.0)
-  layer.width = value(node, "width", 0)
-  layer.height = value(node, "height", 0)
-  layer.visible = if node.attr("visible") == "": true else: value[bool](node,
+  layer.x = node.value("x", 0.0)
+  layer.y = node.value("y", 0.0)
+  layer.width = node.value("width", 0)
+  layer.height = node.value("height", 0)
+  layer.visible = if node.attr("visible") == "": true else: node.value(
       "visible", true)
   layer.tintcolor = node.attr("tintcolor")
-  layer.offsetx = value(node, "offsetx", 0.0)
-  layer.offsety = value(node, "offsety", 0.0)
-  layer.parallaxx = value(node, "parallaxx", 0.0)
-  layer.parallaxy = value(node, "parallaxy", 0.0)
+  layer.offsetx = node.value("offsetx", 0.0)
+  layer.offsety = node.value("offsety", 0.0)
+  layer.parallaxx = node.value("parallaxx", 0.0)
+  layer.parallaxy = node.value("parallaxy", 0.0)
 
 proc buildObjectGroup(node: XmlNode): Layer =
   result.kind = objects
@@ -487,6 +554,11 @@ proc buildObjectGroup(node: XmlNode): Layer =
     case child.tag
       of "properties":
         result.properties = buildProperties(child)
+      of "object":
+        result.objects.add buildObject(child)
+      else:
+        echo "Unexpected tag in objectgroup: " & child.tag
+        discard
 
 proc buildLayer(node: XmlNode): Layer =
   result.kind = tiles
@@ -536,12 +608,12 @@ proc buildTilemap(node: XmlNode, path: string): Map =
   result.nextLayerId = node.attr("nextlayerid")
   result.nextObjectid = node.attr("nextobjectid")
 
-  result.hexSideLength = value(node, "hexsidelength", 0)
-  result.staggerIndex = value(node, "staggerindex", 0)
+  result.hexSideLength = node.value("hexsidelength", 0)
+  result.staggerIndex = node.value("staggerindex", 0)
 
-  result.parallaxOriginX = value(node, "parallaxoriginx", 0)
-  result.parallaxOriginY = value(node, "parallaxoriginy", 0)
-  result.backgroundColor = value(node, "backgroundcolor", "")
+  result.parallaxOriginX = node.value("parallaxoriginx", 0)
+  result.parallaxOriginY = node.value("parallaxoriginy", 0)
+  result.backgroundColor = node.value("backgroundcolor", "")
 
   for item in node:
     case item.tag:
