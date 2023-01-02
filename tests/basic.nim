@@ -50,3 +50,11 @@ suite "finite maps":
 
   test "wangtiles":
     print(loadTiledMap("tests/res/maps/wangsets.tmx").orDefault)
+
+suite "encodings":
+  test "we can load base64 encoded tilemaps":
+    let a = loadTiledMap("tests/res/maps/base64-encoded-no-compression.tmx").orDefault
+    let b = loadTiledMap("tests/res/maps/reference.tmx").orDefault
+
+    for i in 0..<9:
+      check a.layers[0].tileAt(i) == b.layers[0].tileAt(i)

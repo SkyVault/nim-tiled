@@ -1,5 +1,5 @@
 import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
-    print, sugar, sequtils, algorithm, tables
+    print, sugar, sequtils, algorithm, tables, base64
 
 type
   LayerGid* = string
@@ -279,6 +279,10 @@ func tileAt*(layer: Layer, x, y: int): Tile =
   if layer.kind == tiles:
     result = layer.data.tiles[x + y * layer.width]
 
+func tileAt*(layer: Layer, index: int): Tile =
+  if layer.kind == tiles:
+    result = layer.data.tiles[index]
+
 const
   ValueMask = 0x1fffffff'u32
   FlipDiagonal = 0x20000000'u32
@@ -512,8 +516,30 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
   else:
     result.loadTilesetFields(node)
 
-proc buildTiles(csv: string): seq[Tile] =
-  csv.split({',', '\n'}).filterIt(it != "").map it => Tile(parseInt(it))
+proc buildTiles(buff: string, encoding: Encoding): seq[Tile] =
+  # TODO: Handle base64 encoding
+  # let decoded = node.rawText.strip().decode()
+  # echo "DECODED: ", decoded
+  if encoding == Encoding.base64:
+    # TODO: Handle compression
+    const sz = sizeof(uint32)
+
+    let
+      decoded = buff.decode()
+      chrs = toSeq(decoded.items)
+      length = (decoded.len() / sz).int
+
+    for i in 0..<length:
+      let
+        r = chrs[i*sz+0].uint8
+        g = chrs[i*sz+1].uint8
+        b = chrs[i*sz+2].uint8
+        a = chrs[i*sz+3].uint8
+        id: uint32 = (a shl 24) or (b shl 16) or (g shl 8) or r
+
+      result.add(Tile(id))
+  else:
+    return buff.split({',', '\n'}).filterIt(it != "").map it => Tile(parseInt(it))
 
 proc buildChunk(node: XmlNode, encoding: Encoding,
     compression: Compression): Chunk =
@@ -521,7 +547,7 @@ proc buildChunk(node: XmlNode, encoding: Encoding,
   result.y = node.attr("y").parseFloat
   result.width = node.attr("width").parseFloat
   result.height = node.attr("height").parseFloat
-  result.tiles = node.innerText.buildTiles()
+  result.tiles = node.innerText.buildTiles(encoding)
 
 proc buildData(data: XmlNode): Data =
   case data.attr("encoding")
@@ -537,7 +563,6 @@ proc buildData(data: XmlNode): Data =
     of "zstd": result.compression = zstd
     else: discard
 
-  # TODO: Handle base64 encoding
   var hasChunk = false
 
   for node in data:
@@ -551,7 +576,7 @@ proc buildData(data: XmlNode): Data =
           echo "WIP: node 'tile' not handled for data."
           discard
     elif node.kind == xnText:
-      result.tiles = node.innerText.buildTiles()
+      result.tiles = node.innerText.buildTiles(result.encoding)
 
 proc loadTextFields(text: var Object, node: XmlNode) =
   text.kind = text

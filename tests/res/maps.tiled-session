@@ -15,15 +15,23 @@
             "scale": 8,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 33.8125,
+                "x": 30.75,
                 "y": 29.4375
+            }
+        },
+        "maps/base64-encoded-no-compression.tmx": {
+            "scale": 5.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 37.63636363636364,
+                "y": 33.545454545454554
             }
         },
         "maps/finite-csv-30x20.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 246.99999999999997,
+                "x": 230,
                 "y": 185
             }
         },
@@ -31,24 +39,51 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 127.875,
-                "y": 127.875
+                "x": 127.5,
+                "y": 127.625
             }
         },
         "maps/infinite-csv.tmx": {
             "scale": 0.25,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 130,
+                "x": 132,
                 "y": 514
             }
         },
         "maps/objects.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 16,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 14.28125,
+                "x": 12.75,
                 "y": 11.53125
+            }
+        },
+        "maps/properties.tmx": {
+            "scale": 4.5540625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 80.1482193096823,
+                "y": 80.03842722843615
+            }
+        },
+        "maps/reference.tmx": {
+            "scale": 8,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 28.875,
+                "y": 23.8125
+            }
+        },
+        "maps/wangsets.tmx": {
+            "scale": 8,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 27.5,
+                "y": 23.6875
             }
         },
         "tilesets/tileset.tsx": {
@@ -61,9 +96,10 @@
         }
     },
     "last.imagePath": "/home/dneumann/Projects/nim-tiled/tests/res/textures",
-    "map.fixedSize": false,
+    "map.fixedSize": true,
     "map.height": 3,
     "map.lastUsedFormat": "tmx",
+    "map.layerDataFormat": null,
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "map.width": 3,
