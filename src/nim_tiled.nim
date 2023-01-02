@@ -10,7 +10,9 @@ type
   Milliseconds* = float
 
   Vec2 = tuple[x, y: float]
-  Grid* = tuple[orientation: Orientation, width, height: float]
+  Grid* = object
+    orientation: Orientation, 
+    width, height: float
 
   Encoding* {.pure.} = enum
     none
@@ -407,20 +409,30 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
 
   for child in node:
     case child.tag
-      of "image":
-        tileset.image = some buildImage(child)
-      of "tile":
-        tileset.tiles.add(buildTilesetTile(child))
-      of "properties":
-        tileset.properties = buildProperties(child)
+      of "image": tileset.image = some buildImage(child)
+      of "tile": tileset.tiles.add buildTilesetTile(child)
+      of "properties": tileset.properties = buildProperties(child)
+      of "grid":
+        var grid = Grid()
+        grid.orientation
+          case child.attr("orientation")
+            of "orthogonal": orthogonal
+            of "isometric": isometric
+            else: orthogonal
+        grid.width = child.value("width", 0.0)
+        grid.height = child.value("height", 0.0)
+        tileset.grid = some grid
+      # TODO: tileoffset
+      # TODO: terraintypes
+      # TODO: terrain
+      # TODO: transformations
+      # TODO: animation
+      # TODO: frame
+      # TODO: wangsets
+      of "wangsets":
+        discard
       else:
         echo "Unhandled tileset child tag: " & child.tag
-
-  # TODO: grid
-
-  # TODO: properties
-
-  # TODO: wangsets
 
 proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
   result.firstGid =
@@ -437,7 +449,7 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
     result.loadTilesetFields(node)
 
 proc buildTiles(csv: string): seq[Tile] =
-  csv.split({',', '\n'}).filterIt(it != "").map(it => Tile(parseInt(it)))
+  csv.split({',', '\n'}).filterIt(it != "").map it => Tile(parseInt(it))
 
 proc buildChunk(node: XmlNode, encoding: Encoding,
     compression: Compression): Chunk =
