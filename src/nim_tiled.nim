@@ -140,6 +140,7 @@ type
     objectAlignment*: ObjectAlignment
     tileRenderSize*: TileRenderSize
     fillMode*: FillMode
+    tiles: seq[TilesetTile]
     image*: Option[Image]
     grid*: Option[Grid]
     properties*: Option[Properties]
@@ -317,8 +318,24 @@ proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
   result.trans = node.attr("trans")
   result.source = node.attr("source")
-  result.width = value[float](node, "width", 0.0)
-  result.height = value[float](node, "height", 0.0)
+  result.width = value(node, "width", 0.0)
+  result.height = value(node, "height", 0.0)
+
+proc buildTilesetTile(node: XmlNode): TilesetTile =
+  result.id = node.attr("id")
+  result.class = node.attr("class")
+  result.probability = Percent((value(node, "x", 0.0) * 100.0).int)
+  result.x = value(node, "x", 0.0)
+  result.y = value(node, "y", 0.0)
+  result.width = value(node, "width", 0.0)
+  result.height = value(node, "height", 0.0)
+
+  for child in node:
+    case child.tag:
+      of "properties":
+        result.properties = some buildProperties(child)
+      else:
+        discard
 
 proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   if tileset.firstGid == 0:
@@ -365,6 +382,8 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
     case child.tag
       of "image":
         tileset.image = some buildImage(child)
+      of "tile":
+        tileset.tiles.add(buildTilesetTile(child))
       of "properties":
         tileset.properties = some buildProperties(child)
       else:
@@ -436,17 +455,17 @@ proc buildLayer(node: XmlNode): Layer =
   result.id = node.attr("id")
   result.name = node.attr("name")
   result.class = node.attr("class")
-  result.x = value[float](node, "x", 0.0)
-  result.y = value[float](node, "y", 0.0)
-  result.width = value[int](node, "width", 0)
-  result.height = value[int](node, "height", 0)
+  result.x = value(node, "x", 0.0)
+  result.y = value(node, "y", 0.0)
+  result.width = value(node, "width", 0)
+  result.height = value(node, "height", 0)
   result.visible = if node.attr("visible") == "": true else: value[bool](node,
       "visible", true)
   result.tintcolor = node.attr("tintcolor")
-  result.offsetx = value[float](node, "offsetx", 0.0)
-  result.offsety = value[float](node, "offsety", 0.0)
-  result.parallaxx = value[float](node, "parallaxx", 0.0)
-  result.parallaxy = value[float](node, "parallaxy", 0.0)
+  result.offsetx = value(node, "offsetx", 0.0)
+  result.offsety = value(node, "offsety", 0.0)
+  result.parallaxx = value(node, "parallaxx", 0.0)
+  result.parallaxy = value(node, "parallaxy", 0.0)
 
   for subNode in node:
     case subNode.tag
@@ -492,12 +511,12 @@ proc buildTilemap(node: XmlNode, path: string): Map =
   result.nextLayerId = node.attr("nextlayerid")
   result.nextObjectid = node.attr("nextobjectid")
 
-  result.hexSideLength = value[int](node, "hexsidelength", 0)
-  result.staggerIndex = value[int](node, "staggerindex", 0)
+  result.hexSideLength = value(node, "hexsidelength", 0)
+  result.staggerIndex = value(node, "staggerindex", 0)
 
-  result.parallaxOriginX = value[int](node, "parallaxoriginx", 0)
-  result.parallaxOriginY = value[int](node, "parallaxoriginy", 0)
-  result.backgroundColor = value[string](node, "backgroundcolor", "")
+  result.parallaxOriginX = value(node, "parallaxoriginx", 0)
+  result.parallaxOriginY = value(node, "parallaxoriginy", 0)
+  result.backgroundColor = value(node, "backgroundcolor", "")
 
   for item in node:
     case item.tag:

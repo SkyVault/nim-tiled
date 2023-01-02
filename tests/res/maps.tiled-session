@@ -22,6 +22,14 @@
                 "x": 414,
                 "y": 80
             }
+        },
+        "maps/properties.tmx": {
+            "scale": 3.2953124999999996,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 80.26552868658132,
+                "y": 80.11379800853486
+            }
         }
     },
     "last.imagePath": "/home/dneumann/Projects/nim-tiled/tests/res/textures",
@@ -36,6 +44,7 @@
     "project": "maps.tiled-project",
     "property.type": "file",
     "recentFiles": [
+        "maps/properties.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
