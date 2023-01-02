@@ -359,8 +359,8 @@ proc buildAnimation(node: XmlNode): Animation =
       echo "Unsupported child tag in animation: " & child.tag
     else:
       result.add Frame(
-        tileid: Tile(node.value("tileid", 0)),
-        duration: Milliseconds(node.value("duration", 0)))
+        tileid: Tile(child.value("tileid", 0)),
+        duration: Milliseconds(child.value("duration", 0)))
 
 proc buildObjectGroup(node: XmlNode): Layer
 
