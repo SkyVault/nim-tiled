@@ -2,9 +2,9 @@ import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
     print, sugar, sequtils, algorithm, tables
 
 type
-  LayerUID* = string
-  TileUID* = int
-  ObjectUID* = string
+  LayerGid* = string
+  TileGid* = int
+  ObjectGid* = string
 
   Percent* = range[0..100]
   Milliseconds* = float
@@ -128,7 +128,7 @@ type
 
   Tileset* = object
     version, tiledversion: string
-    firstGid: TileUID = 0
+    firstGid: TileGid = 0
 
     source: string
     name, class: string
@@ -146,7 +146,7 @@ type
     properties*: Properties
     wangsets*: Option[Wangsets]
 
-  Tile* = TileUID
+  Tile* = TileGid
 
   Chunk* = object
     x*, y*, width*, height*: float
@@ -171,7 +171,7 @@ type
     name, class: string
     x*, y*, width*, height*: float
     rotation*: float
-    gid*: TileUID
+    gid*: TileGid
     visible*: bool
     templateFile*: Option[string] # Links to a separate template file
     properties*: Properties
@@ -202,7 +202,7 @@ type
     group
 
   Layer* = object
-    id: LayerUID
+    id: LayerGid
     name, class: string
 
     x*, y*: float
@@ -243,8 +243,8 @@ type
     staggerIndex*: int
     parallaxOriginX*, parallaxOriginY*: int
     backgroundColor*: string
-    nextLayerId*: LayerUID
-    nextObjectid*: ObjectUID
+    nextLayerId*: LayerGid
+    nextObjectid*: ObjectGid
     infinite*: bool
 
     properties*: Properties
@@ -252,7 +252,7 @@ type
     tilesets*: seq[Tileset]
     layers*: seq[Layer]
 
-    firstGidToTilesetName: Table[TileUID, string]
+    firstGidToTilesetName: Table[TileGid, string]
 
 proc id*(it: Layer|Object|TilesetTile): auto = it.id
 proc name*(it: Layer|Object|Tileset|Wangset|Wangcolor): auto = it.name
@@ -267,6 +267,18 @@ proc source*(it: Tileset): auto = it.source
 func tileAt*(layer: Layer, x, y: int): Tile =
   if layer.kind == tiles:
     result = layer.data.tiles[x + y * layer.width]
+
+const
+  ValueMask = 0x1fffffff'u32
+  FlipDiagonal = 0x20000000'u32
+  FlipVertical = 0x40000000'u32
+  FlipHorizontal = 0x80000000'u32
+
+func tileValue*(gid: TileGid): int {.inline.} = (gid.uint32 and ValueMask).int
+func hflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipHorizontal) != 0
+func vflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipVertical) != 0
+func dflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipDiagonal) != 0
+
 
 ## Utility functions
 
@@ -296,7 +308,7 @@ proc value[T](self: XmlNode, a: string, v: T): T =
   elif T is string:
     return self.attr(a)
 
-proc tilesetForTileId*(map: Map, tileId: Tile): TileUID =
+proc tilesetForTileId*(map: Map, tileId: Tile): TileGid =
   result = 0
 
   # first sort tilesets by their firstGid
@@ -623,12 +635,12 @@ proc buildTilemap(node: XmlNode, path: string): Map =
       of "properties": result.properties = buildProperties(item)
       else: echo "Unhandled tag: ", item.tag
 
-  result.firstGidToTilesetName = initTable[TileUID, string]()
+  result.firstGidToTilesetName = initTable[TileGid, string]()
 
   for tileset in result.tilesets:
     result.firstGidToTilesetName[tileset.firstGid] = tileset.name
 
-proc getTilesetNameGivenFirstGid*(map: Map, uid: TileUID): string =
+proc getTilesetNameGivenFirstGid*(map: Map, uid: TileGid): string =
   map.firstGidToTilesetName[uid]
 
 type
