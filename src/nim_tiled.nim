@@ -65,7 +65,7 @@ type
 
   Wangset* = object
     name, class, tile*: string
-    properties*: Option[Properties]
+    properties*: Properties
     wangcolors*: seq[Wangcolor] # TODO: Assert max length of 255
     wangtiles*: seq[Wangtile]
 
@@ -80,7 +80,7 @@ type
 
     probability*: Percent
     x*, y*, width*, height*: float
-    properties*: Option[Properties]
+    properties*: Properties
     image*: Option[Image]
     animation*: Option[Animation]
 
@@ -143,7 +143,7 @@ type
     tiles: seq[TilesetTile]
     image*: Option[Image]
     grid*: Option[Grid]
-    properties*: Option[Properties]
+    properties*: Properties
     wangsets*: Option[Wangsets]
 
   Tile* = TileUID
@@ -189,6 +189,10 @@ type
         halign*: HAlignment
         valign*: VAlignment
 
+  DrawOrder* = enum
+    topdown
+    index
+
   LayerKind* = enum
     tiles
     objects
@@ -206,13 +210,15 @@ type
     tintcolor*: string
     offsetx*, offsety*: float
     parallaxx*, parallaxy*: float
-    properties*: Option[Properties]
+    properties*: Properties
 
     case kind*: LayerKind
       of tiles:
         data*: Data
       of objects:
         objects*: seq[Object]
+        color*: string
+        drawOrder*: DrawOrder = topdown
       of image:
         repeatx, repeaty: bool
         image*: Option[Image]
@@ -239,7 +245,7 @@ type
     nextObjectid*: ObjectUID
     infinite*: bool
 
-    properties*: Option[Properties]
+    properties*: Properties
 
     tilesets*: seq[Tileset]
     layers*: seq[Layer]
@@ -333,7 +339,7 @@ proc buildTilesetTile(node: XmlNode): TilesetTile =
   for child in node:
     case child.tag:
       of "properties":
-        result.properties = some buildProperties(child)
+        result.properties = buildProperties(child)
       else:
         discard
 
@@ -385,7 +391,7 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
       of "tile":
         tileset.tiles.add(buildTilesetTile(child))
       of "properties":
-        tileset.properties = some buildProperties(child)
+        tileset.properties = buildProperties(child)
       else:
         echo "Unhandled tileset child tag: " & child.tag
 
@@ -450,29 +456,48 @@ proc buildData(data: XmlNode): Data =
     elif node.kind == xnText:
       result.tiles = node.innerText.buildTiles()
 
+proc loadBasicLayerFields(layer: var Layer, node: XmlNode) =
+  layer.id = node.attr("id")
+  layer.name = node.attr("name")
+  layer.class = node.attr("class")
+  layer.x = value(node, "x", 0.0)
+  layer.y = value(node, "y", 0.0)
+  layer.width = value(node, "width", 0)
+  layer.height = value(node, "height", 0)
+  layer.visible = if node.attr("visible") == "": true else: value[bool](node,
+      "visible", true)
+  layer.tintcolor = node.attr("tintcolor")
+  layer.offsetx = value(node, "offsetx", 0.0)
+  layer.offsety = value(node, "offsety", 0.0)
+  layer.parallaxx = value(node, "parallaxx", 0.0)
+  layer.parallaxy = value(node, "parallaxy", 0.0)
+
+proc buildObjectGroup(node: XmlNode): Layer =
+  result.kind = objects
+  loadBasicLayerFields(result, node)
+
+  result.color = node.attr("color")
+  result.drawOrder =
+    case node.attr("draworder")
+      of "index": index
+      of "topdown": topdown
+      else: topdown
+
+  for child in node:
+    case child.tag
+      of "properties":
+        result.properties = buildProperties(child)
+
 proc buildLayer(node: XmlNode): Layer =
   result.kind = tiles
-  result.id = node.attr("id")
-  result.name = node.attr("name")
-  result.class = node.attr("class")
-  result.x = value(node, "x", 0.0)
-  result.y = value(node, "y", 0.0)
-  result.width = value(node, "width", 0)
-  result.height = value(node, "height", 0)
-  result.visible = if node.attr("visible") == "": true else: value[bool](node,
-      "visible", true)
-  result.tintcolor = node.attr("tintcolor")
-  result.offsetx = value(node, "offsetx", 0.0)
-  result.offsety = value(node, "offsety", 0.0)
-  result.parallaxx = value(node, "parallaxx", 0.0)
-  result.parallaxy = value(node, "parallaxy", 0.0)
+  loadBasicLayerFields(result, node)
 
   for subNode in node:
     case subNode.tag
       of "data":
         result.data = buildData(subNode)
       of "properties":
-        result.properties = buildProperties(subNode).some
+        result.properties = buildProperties(subNode)
       else:
         echo &"Unexpected child tag for layer: {subNode.tag}"
 
@@ -522,7 +547,8 @@ proc buildTilemap(node: XmlNode, path: string): Map =
     case item.tag:
       of "tileset": result.tilesets.add buildTileset(item, path)
       of "layer": result.layers.add buildLayer(item)
-      of "properties": result.properties = buildProperties(item).some
+      of "objectgroup": result.layers.add buildObjectGroup(item)
+      of "properties": result.properties = buildProperties(item)
       else: echo "Unhandled tag: ", item.tag
 
   result.firstGidToTilesetName = initTable[TileUID, string]()

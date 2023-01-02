@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="3" height="3" tilewidth="16" tileheight="16" infinite="1" nextlayerid="3" nextobjectid="6">
+ <objectgroup id="2" name="Object Layer 1">
+  <object id="1" x="0.0434783" y="0" width="2.47826" height="2.13043"/>
+  <object id="2" x="6.30435" y="2.13043">
+   <point/>
+  </object>
+  <object id="3" x="11.1739" y="-0.73913" width="2.26087" height="6.26087">
+   <ellipse/>
+  </object>
+  <object id="4" x="1.04348" y="7.47826">
+   <polygon points="0,0 2.6087,3 -1.13043,4.08696"/>
+  </object>
+  <object id="5" x="-7.39" y="4.02" width="87.7344" height="23">
+   <text pixelsize="6" wrap="1" color="#ffaa7f" bold="1" italic="1" underline="1">Hello, Tiled!</text>
+  </object>
+ </objectgroup>
+</map>

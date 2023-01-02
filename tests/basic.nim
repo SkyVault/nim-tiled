@@ -23,9 +23,7 @@ suite "finite maps":
   test "properties":
     let result = loadTiledMap("tests/res/maps/properties.tmx").orDefault
 
-    check result.properties.isSome
-
-    let props = result.properties.get()
+    let props = result.properties
     check props[0].kind == boolProp
     check props[0].kind == boolProp and props[0].boolean == true
 
@@ -43,3 +41,6 @@ suite "finite maps":
 
     check props[5].kind == stringProp
     check props[5].kind == stringProp and props[5].str == "This is a string"
+
+  test "objects":
+    let result = loadTiledMap("tests/res/maps/objects.tmx").orDefault
