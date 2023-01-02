@@ -237,6 +237,10 @@ proc tiledversion*(it: Tileset|Map): auto = it.tiledversion
 proc firstGid*(it: Tileset): auto = it.firstGid
 proc source*(it: Tileset): auto = it.source
 
+func tileAt* (layer: Layer, x, y: int): Tile =
+  if layer.kind == tiles:
+    result = layer.data.tiles[x + y * layer.width]
+
 ## Utility functions
 
 proc value[T](self: XmlNode, a: string, v: T): T =
@@ -274,7 +278,6 @@ proc tilesetForTileId*(map: Map, tileId: Tile): TileUID =
 
     if tileId >= ts.firstGid:
       result = ts.firstGid
-
 
 ## Builders
 
