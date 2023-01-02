@@ -166,7 +166,7 @@ type
     polyline
     text
 
-  Object = object
+  Object* = object
     id: int
     name, class: string
     x*, y*, width*, height*: float
@@ -195,7 +195,7 @@ type
     image
     group
 
-  Layer = object
+  Layer* = object
     id: LayerUID
     name, class: string
 
@@ -219,11 +219,11 @@ type
       of group:
         layers*: seq[Layer]
 
-  Axis = enum
+  Axis* = enum
     axisX
     axisY
 
-  Map = object
+  Map* = object
     version, tiledversion, class: string
     orientation*: Orientation
     renderOrder*: RenderOrder

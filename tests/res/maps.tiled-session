@@ -3,33 +3,45 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "maps/finite-csv-30x20.tmx",
     "expandedProjectPaths": [
+        ".",
+        "tilesets",
+        "maps"
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "maps/finite-csv-30x20.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 236.33333333333331,
-                "y": 274
+                "x": 246.99999999999997,
+                "y": 185
+            }
+        },
+        "maps/infinite-csv-multiple-tilesets.tmx": {
+            "scale": 4,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 127.625,
+                "y": 127.625
             }
         },
         "maps/infinite-csv.tmx": {
             "scale": 0.25,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 414,
-                "y": 80
+                "x": 130,
+                "y": 514
             }
         },
-        "maps/properties.tmx": {
-            "scale": 3.2953124999999996,
-            "selectedLayer": 0,
-            "viewCenter": {
-                "x": 80.26552868658132,
-                "y": 80.11379800853486
-            }
+        "tilesets/tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 5.5
+        },
+        "tilesets/tileset2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
     "last.imagePath": "/home/dneumann/Projects/nim-tiled/tests/res/textures",
@@ -40,11 +52,20 @@
     "map.tileWidth": 16,
     "map.width": 10,
     "openFiles": [
+        "tilesets/tileset.tsx",
+        "maps/finite-csv-30x20.tmx",
+        "maps/infinite-csv.tmx",
+        "tilesets/tileset2.tsx",
+        "maps/infinite-csv-multiple-tilesets.tmx"
     ],
     "project": "maps.tiled-project",
     "property.type": "file",
     "recentFiles": [
-        "maps/properties.tmx"
+        "tilesets/tileset.tsx",
+        "maps/infinite-csv-multiple-tilesets.tmx",
+        "tilesets/tileset2.tsx",
+        "maps/infinite-csv.tmx",
+        "maps/finite-csv-30x20.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
