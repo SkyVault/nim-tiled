@@ -43,6 +43,9 @@ suite "finite maps":
     check props[5].kind == stringProp and props[5].str == "This is a string"
 
   test "objects":
-    let result = loadTiledMap("tests/res/maps/objects.tmx").orDefault
+    discard loadTiledMap("tests/res/maps/objects.tmx").orDefault
+
+  test "animations":
+    let result = loadTiledMap("tests/res/maps/animated.tmx").orDefault
 
     print(result)

@@ -7,11 +7,11 @@ type
   ObjectGid* = string
 
   Percent* = range[0..100]
-  Milliseconds* = float
+  Milliseconds* = int
 
   Vec2 = tuple[x, y: float]
   Grid* = object
-    orientation: Orientation, 
+    orientation: Orientation
     width, height: float
 
   Encoding* {.pure.} = enum
@@ -52,7 +52,7 @@ type
   Properties* = seq[Prop]
 
   Frame* = object
-    tileid*: string
+    tileid*: Tile
     duration*: Milliseconds
 
   Animation* = seq[Frame]
@@ -85,6 +85,8 @@ type
     properties*: Properties
     image*: Option[Image]
     animation*: Option[Animation]
+    objectGroup*: Option[Layer]
+    tileoffset*: Vec2
 
   Image* = object
     format*: string
@@ -147,6 +149,7 @@ type
     grid*: Option[Grid]
     properties*: Properties
     wangsets*: Option[Wangsets]
+    transformations*: Option[Transformations]
 
   Tile* = TileGid
 
@@ -350,6 +353,17 @@ proc buildImage(node: XmlNode): Image =
   result.width = node.value("width", 0.0)
   result.height = node.value("height", 0.0)
 
+proc buildAnimation(node: XmlNode): Animation =
+  for child in node:
+    if child.tag != "frame":
+      echo "Unsupported child tag in animation: " & child.tag
+    else:
+      result.add Frame(
+        tileid: Tile(node.value("tileid", 0)),
+        duration: Milliseconds(node.value("duration", 0)))
+
+proc buildObjectGroup(node: XmlNode): Layer
+
 proc buildTilesetTile(node: XmlNode): TilesetTile =
   result.id = node.attr("id")
   result.class = node.attr("class")
@@ -361,9 +375,12 @@ proc buildTilesetTile(node: XmlNode): TilesetTile =
 
   for child in node:
     case child.tag:
-      of "properties":
-        result.properties = buildProperties(child)
+      of "properties": result.properties = buildProperties(child)
+      of "animation": result.animation = some buildAnimation(child)
+      of "objectgroup": result.objectGroup = some buildObjectGroup(child)
+      of "image": result.image = some buildImage(child)
       else:
+        echo "Unexpected child tag in tile: " & child.tag
         discard
 
 proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
@@ -375,36 +392,35 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   tileset.source = node.attr("source")
   tileset.name = node.attr("name")
   tileset.class = node.attr("class")
-  tileset.tilewidth = value[int](node, "tilewidth", 0)
-  tileset.tileheight = value[int](node, "tileheight", 0)
-  tileset.spacing = value[float](node, "spacing", 0.0)
-  tileset.margin = value[float](node, "margin", 0.0)
-  tileset.tilecount = value[int](node, "tilecount", 0)
-  tileset.columns = value[int](node, "columns", 0)
-  # tileset.tileOffset = value[int](node, "tileoffset")
+  tileset.tilewidth = node.value("tilewidth", 0)
+  tileset.tileheight = node.value("tileheight", 0)
+  tileset.spacing = node.value("spacing", 0.0)
+  tileset.margin = node.value("margin", 0.0)
+  tileset.tilecount = node.value("tilecount", 0)
+  tileset.columns = node.value("columns", 0)
   tileset.objectAlignment =
     case node.attr("objectalignment"):
       of "unspecified": unspecified
-      of "topLeft": topLeft
+      of "topleft": topLeft
       of "top": top
-      of "topRight": topRight
+      of "topright": topRight
       of "center": center
       of "right": right
-      of "bottomLeft": bottomLeft
+      of "bottomleft": bottomLeft
       of "bottom": bottom
-      of "bottomRight": bottomRight
+      of "bottomright": bottomRight
       else: unspecified
 
   tileset.tileRenderSize =
-    case node.attr("tileRenderSize")
+    case node.attr("tilerendersize")
       of "tile": tile
       of "grid": grid
       else: tile
 
   tileset.fillMode =
-    case node.attr("fillMode")
+    case node.attr("fillmode")
       of "stretch": stretch
-      of "preserveAspectFit": preserveAspectFit
+      of "preserve-aspect-fit": preserveAspectFit
       else: stretch
 
   for child in node:
@@ -414,7 +430,7 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
       of "properties": tileset.properties = buildProperties(child)
       of "grid":
         var grid = Grid()
-        grid.orientation
+        grid.orientation =
           case child.attr("orientation")
             of "orthogonal": orthogonal
             of "isometric": isometric
@@ -422,14 +438,17 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
         grid.width = child.value("width", 0.0)
         grid.height = child.value("height", 0.0)
         tileset.grid = some grid
-      # TODO: tileoffset
-      # TODO: terraintypes
-      # TODO: terrain
-      # TODO: transformations
-      # TODO: animation
-      # TODO: frame
-      # TODO: wangsets
+      of "tileoffset":
+        tileset.tileOffset.x = child.value("x", 0.0)
+        tileset.tileOffset.y = child.value("y", 0.0)
+      of "transformations":
+        var transform = Transformations()
+        transform.hflip = child.value("hflip", false)
+        transform.vflip = child.value("vflip", false)
+        transform.preferuntransformed = child.value("preferuntransformed", false)
+        tileset.transformations = some transform
       of "wangsets":
+        # TODO: wangsets
         discard
       else:
         echo "Unhandled tileset child tag: " & child.tag
@@ -507,7 +526,7 @@ proc loadTextFields(text: var Object, node: XmlNode) =
       of "justify": justify
       else: left
   text.valign =
-    case node.attr("halign")
+    case node.attr("valign")
       of "top": top
       of "center": center
       of "bottom": bottom
