@@ -11,6 +11,14 @@
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "maps/animated.tmx": {
+            "scale": 8,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 33.8125,
+                "y": 29.4375
+            }
+        },
         "maps/finite-csv-30x20.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,

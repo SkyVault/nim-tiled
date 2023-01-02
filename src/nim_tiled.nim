@@ -58,15 +58,20 @@ type
   Animation* = seq[Frame]
 
   Wangcolor* = object
-    name, class, color*, tile*: string
+    name, class, color*: string
+    tile*: Tile
     probability*: Percent
+    properties: Properties
 
   Wangtile* = object
-    tileid*, wangid*: string
+    tileid*: TileGid
+    # TODO: Do we want to support the old 32-bit unsigned integer version of this value?
+    wangid*: seq[TileGid]
     hflip*, vflip*, dflip*: bool
 
   Wangset* = object
-    name, class, tile*: string
+    name, class: string
+    tile*: Tile
     properties*: Properties
     wangcolors*: seq[Wangcolor] # TODO: Assert max length of 255
     wangtiles*: seq[Wangtile]
@@ -268,6 +273,7 @@ proc tiledversion*(it: Tileset|Map): auto = it.tiledversion
 
 proc firstGid*(it: Tileset): auto = it.firstGid
 proc source*(it: Tileset): auto = it.source
+proc toPercent(v: float): Percent = Percent((v * 100.0).int)
 
 func tileAt*(layer: Layer, x, y: int): Tile =
   if layer.kind == tiles:
@@ -362,12 +368,53 @@ proc buildAnimation(node: XmlNode): Animation =
         tileid: Tile(child.value("tileid", 0)),
         duration: Milliseconds(child.value("duration", 0)))
 
+proc buildWangcolor(node: XmlNode): Wangcolor =
+  result.name = node.attr("name")
+  result.class = node.attr("class")
+  result.color = node.attr("color")
+  result.tile = node.value("tile", 0)
+  result.probability = node.value("probability", 0.0).toPercent()
+  for child in node:
+    if child.tag != "properties":
+      echo "Unexpected child tag in wangcolor: " & child.tag
+    else:
+      result.properties = buildProperties(child)
+
+proc buildWangtile(node: XmlNode): Wangtile =
+  result.tileid = Tile(node.value("tileid", 0))
+  result.wangid = node.attr("wangid").split({','}).map it => Tile(it.parseInt)
+  # NOTE: just realized that these are removed as of Tiled 1.5,
+  # we'll keep them in for backward compatibility... for now
+  result.hflip = node.value("hflip", false)
+  result.vflip = node.value("vflip", false)
+  result.dflip = node.value("dflip", false)
+
+proc buildWangset(node: XmlNode): Wangset =
+  result.name = node.attr("name")
+  result.class = node.attr("class")
+  result.tile = node.value("tile", 0)
+
+  for child in node:
+    case child.tag
+      of "properties": result.properties = buildProperties(child)
+      of "wangcolor": result.wangcolors.add buildWangcolor(child)
+      of "wangtile": result.wangtiles.add buildWangtile(child)
+      else:
+        echo "Unexpected child tag in wangset: " & child.tag
+
+proc buildWangsets(node: XmlNode): Wangsets =
+  for child in node:
+    if child.tag != "wangset":
+      echo "Unexpected child tag in wangsets: " & child.tag
+    else:
+      result.add buildWangset(child)
+
 proc buildObjectGroup(node: XmlNode): Layer
 
 proc buildTilesetTile(node: XmlNode): TilesetTile =
   result.id = node.attr("id")
   result.class = node.attr("class")
-  result.probability = Percent((node.value("x", 0.0) * 100.0).int)
+  result.probability = node.value("x", 0.0).toPercent()
   result.x = node.value("x", 0.0)
   result.y = node.value("y", 0.0)
   result.width = node.value("width", 0.0)
@@ -428,6 +475,7 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
       of "image": tileset.image = some buildImage(child)
       of "tile": tileset.tiles.add buildTilesetTile(child)
       of "properties": tileset.properties = buildProperties(child)
+      of "wangsets": tileset.wangsets = some buildWangsets(child)
       of "grid":
         var grid = Grid()
         grid.orientation =
@@ -447,9 +495,6 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
         transform.vflip = child.value("vflip", false)
         transform.preferuntransformed = child.value("preferuntransformed", false)
         tileset.transformations = some transform
-      of "wangsets":
-        # TODO: wangsets
-        discard
       else:
         echo "Unhandled tileset child tag: " & child.tag
 

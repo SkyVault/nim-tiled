@@ -46,6 +46,7 @@ suite "finite maps":
     discard loadTiledMap("tests/res/maps/objects.tmx").orDefault
 
   test "animations":
-    let result = loadTiledMap("tests/res/maps/animated.tmx").orDefault
+    discard loadTiledMap("tests/res/maps/animated.tmx").orDefault
 
-    print(result)
+  test "wangtiles":
+    print(loadTiledMap("tests/res/maps/wangsets.tmx").orDefault)

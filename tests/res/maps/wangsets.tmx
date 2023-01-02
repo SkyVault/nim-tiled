@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="3" height="3" tilewidth="16" tileheight="16" infinite="1" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" source="../tilesets/animated.tsx"/>
+ <tileset firstgid="257" source="../tilesets/wangtiles.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="3" height="3">
+  <data encoding="csv">
+   <chunk x="0" y="0" width="16" height="16">
+274,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,274,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,274,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</chunk>
+  </data>
+ </layer>
+</map>
