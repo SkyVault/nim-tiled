@@ -58,3 +58,11 @@ suite "encodings":
 
     for i in 0..<9:
       check a.layers[0].tileAt(i) == b.layers[0].tileAt(i)
+
+suite "compression":
+  test "we can load zlib compressed data":
+    let a = loadTiledMap("tests/res/maps/zlib-compression.tmx").orDefault
+    let b = loadTiledMap("tests/res/maps/reference.tmx").orDefault
+
+    for i in 0..<9:
+      check a.layers[0].tileAt(i) == b.layers[0].tileAt(i)

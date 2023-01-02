@@ -1,5 +1,5 @@
 import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
-    print, sugar, sequtils, algorithm, tables, base64
+    print, sugar, sequtils, algorithm, tables, base64, zippy
 
 type
   LayerGid* = string
@@ -516,16 +516,28 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
   else:
     result.loadTilesetFields(node)
 
-proc buildTiles(buff: string, encoding: Encoding): seq[Tile] =
-  # TODO: Handle base64 encoding
-  # let decoded = node.rawText.strip().decode()
-  # echo "DECODED: ", decoded
+proc buildTiles(buff: string, encoding: Encoding,
+    compression: Compression): seq[Tile] =
+
+  proc handleUncompress(data: string): string =
+    result =
+      case compression
+        of none: data
+        of gzip: uncompress(data, dfGzip)
+        of zlib: uncompress(data, dfZlib)
+        of zstd:
+          # TODO: Look into supporting zstd compression by using this library:
+          # https://github.com/wltsmrz/nim_zstd
+          # optionally we could provide a hook so that you could pass in any uncompress function.
+          echo "Error unsupported compression (ZSTD)"
+          data
+
   if encoding == Encoding.base64:
     # TODO: Handle compression
     const sz = sizeof(uint32)
 
     let
-      decoded = buff.decode()
+      decoded = buff.decode().handleUncompress()
       chrs = toSeq(decoded.items)
       length = (decoded.len() / sz).int
 
@@ -547,7 +559,7 @@ proc buildChunk(node: XmlNode, encoding: Encoding,
   result.y = node.attr("y").parseFloat
   result.width = node.attr("width").parseFloat
   result.height = node.attr("height").parseFloat
-  result.tiles = node.innerText.buildTiles(encoding)
+  result.tiles = node.innerText.buildTiles(encoding, compression)
 
 proc buildData(data: XmlNode): Data =
   case data.attr("encoding")
@@ -576,7 +588,8 @@ proc buildData(data: XmlNode): Data =
           echo "WIP: node 'tile' not handled for data."
           discard
     elif node.kind == xnText:
-      result.tiles = node.innerText.buildTiles(result.encoding)
+      result.tiles = node.innerText.buildTiles(result.encoding,
+          result.compression)
 
 proc loadTextFields(text: var Object, node: XmlNode) =
   text.kind = text
@@ -715,8 +728,6 @@ proc buildTilemap(node: XmlNode, path: string): Map =
       of "left-up": rightUp
       of "left-down": leftUp
       else: rightDown
-
-  # TODO: Compression level
 
   result.nextLayerId = node.attr("nextlayerid")
   result.nextObjectid = node.attr("nextobjectid")
