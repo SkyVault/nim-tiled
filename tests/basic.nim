@@ -1,5 +1,5 @@
 import ../src/nim_tiled
-import unittest, print
+import unittest, print, options
 
 suite "finite maps":
   test "finite csv | 30x20 map size | 16x16 tile size":
@@ -19,3 +19,27 @@ suite "finite maps":
     check result.getTilesetNameGivenFirstGid(Tile(1)) == "tileset"
     check result.getTilesetNameGivenFirstGid(tilesetForTileId(result, Tile(
         300))) == "tileset2"
+
+  test "properties":
+    let result = loadTiledMap("tests/res/maps/properties.tmx").orDefault
+
+    check result.properties.isSome
+
+    let props = result.properties.get()
+    check props[0].kind == boolProp
+    check props[0].kind == boolProp and props[0].boolean == true
+
+    check props[1].kind == colorProp
+    check props[1].kind == colorProp and props[1].color == "#ffff557f"
+
+    check props[2].kind == fileProp
+    check props[2].kind == fileProp and props[2].path == "finite-csv-30x20.tmx"
+
+    check props[3].kind == floatProp
+    check props[3].kind == floatProp and props[3].number == 3.1415926
+
+    check props[4].kind == objectProp
+    check props[4].kind == objectProp and props[4].objectValue == "0"
+
+    check props[5].kind == stringProp
+    check props[5].kind == stringProp and props[5].str == "This is a string"

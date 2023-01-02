@@ -25,13 +25,16 @@
         }
     },
     "last.imagePath": "/home/dneumann/Projects/nim-tiled/tests/res/textures",
-    "map.fixedSize": false,
+    "map.fixedSize": true,
+    "map.height": 10,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
+    "map.width": 10,
     "openFiles": [
     ],
     "project": "maps.tiled-project",
+    "property.type": "file",
     "recentFiles": [
     ],
     "tileset.lastUsedFormat": "tsx",

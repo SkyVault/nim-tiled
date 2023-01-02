@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="1">
+ <properties>
+  <property name="boolean" type="bool" value="true"/>
+  <property name="color property" type="color" value="#ffff557f"/>
+  <property name="file path" type="file" value="finite-csv-30x20.tmx"/>
+  <property name="float test" type="float" value="3.1415926"/>
+  <property name="object test" type="object" value="0"/>
+  <property name="string test" value="This is a string"/>
+ </properties>
+ <tileset firstgid="1" source="../tilesets/tileset.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="10" height="10">
+  <data encoding="csv">
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18,
+18,18,18,18,18,18,18,18,18,18
+</data>
+ </layer>
+</map>

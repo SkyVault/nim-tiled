@@ -29,7 +29,25 @@ type
     tiles*: seq[Tile]
     chunks*: seq[Chunk]
 
-  Properties* = object
+
+  PropKind* = enum
+    boolProp
+    colorProp
+    fileProp
+    floatProp
+    objectProp
+    stringProp
+
+  Prop* = object
+    case kind*: PropKind
+      of boolProp: boolean*: bool
+      of colorProp: color*: string
+      of fileProp: path*: string
+      of floatProp: number*: float
+      of objectProp: objectValue*: string
+      of stringProp: str*: string
+
+  Properties* = seq[Prop]
 
   Frame* = object
     tileid*: string
@@ -237,7 +255,7 @@ proc tiledversion*(it: Tileset|Map): auto = it.tiledversion
 proc firstGid*(it: Tileset): auto = it.firstGid
 proc source*(it: Tileset): auto = it.source
 
-func tileAt* (layer: Layer, x, y: int): Tile =
+func tileAt*(layer: Layer, x, y: int): Tile =
   if layer.kind == tiles:
     result = layer.data.tiles[x + y * layer.width]
 
@@ -280,6 +298,20 @@ proc tilesetForTileId*(map: Map, tileId: Tile): TileUID =
       result = ts.firstGid
 
 ## Builders
+
+proc buildProp(prop: XmlNode): Prop =
+  result =
+    case prop.attr("type")
+      of "bool": Prop(kind: boolProp, boolean: prop.attr("value") == "true")
+      of "color": Prop(kind: colorProp, color: prop.attr("value"))
+      of "file": Prop(kind: fileProp, path: prop.attr("value"))
+      of "float": Prop(kind: floatProp, number: prop.attr("value").parseFloat)
+      of "object": Prop(kind: objectProp, objectValue: prop.attr("value"))
+      of "": Prop(kind: stringProp, str: prop.attr("value"))
+      else: Prop()
+
+proc buildProperties(props: XmlNode): Properties =
+  for p in props: result.add buildProp(p)
 
 proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
@@ -333,6 +365,8 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
     case child.tag
       of "image":
         tileset.image = some buildImage(child)
+      of "properties":
+        tileset.properties = some buildProperties(child)
       else:
         echo "Unhandled tileset child tag: " & child.tag
 
@@ -355,9 +389,6 @@ proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
     result.loadTilesetFields(tilesetNode)
   else:
     result.loadTilesetFields(node)
-
-proc buildProperties(props: XmlNode): Properties =
-  discard
 
 proc buildTiles(csv: string): seq[Tile] =
   csv.split({',', '\n'}).filterIt(it != "").map(it => Tile(parseInt(it)))
@@ -467,8 +498,6 @@ proc buildTilemap(node: XmlNode, path: string): Map =
   result.parallaxOriginX = value[int](node, "parallaxoriginx", 0)
   result.parallaxOriginY = value[int](node, "parallaxoriginy", 0)
   result.backgroundColor = value[string](node, "backgroundcolor", "")
-
-  # TODO: load custom map properties
 
   for item in node:
     case item.tag:
