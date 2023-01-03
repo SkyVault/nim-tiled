@@ -761,7 +761,7 @@ type
     tiledError
 
   LoadErrorKind = enum
-    tiledErrorFileNotFound
+    fileNotFound
 
   LoadResult = object
     case kind: LoadResultKind
@@ -786,7 +786,7 @@ proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
 
 proc loadTiledMap*(path: string): LoadResult =
   if not fileExists(path):
-    return errorResult(tiledErrorFileNotFound, "File does not exist.")
+    return errorResult(fileNotFound, "File does not exist.")
 
   result = LoadResult(
     kind: tiledOk,

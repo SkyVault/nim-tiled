@@ -2,6 +2,12 @@ import ../src/nim_tiled
 import unittest, print, options
 
 suite "finite maps":
+  test "basic":
+    let res = loadTiledMap("tests/res/maps/finite-csv-30x20.tmx")
+
+    if res.isOk:
+      echo "Loaded the tiled map: ", res.tiledMap
+
   test "finite csv | 30x20 map size | 16x16 tile size":
     let result = loadTiledMap("tests/res/maps/finite-csv-30x20.tmx").orDefault
     let layer = result.layers[0]
@@ -49,7 +55,7 @@ suite "finite maps":
     discard loadTiledMap("tests/res/maps/animated.tmx").orDefault
 
   test "wangtiles":
-    print(loadTiledMap("tests/res/maps/wangsets.tmx").orDefault)
+    discard loadTiledMap("tests/res/maps/wangsets.tmx").orDefault
 
 suite "encodings":
   test "we can load base64 encoded tilemaps":
