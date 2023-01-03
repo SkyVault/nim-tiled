@@ -159,7 +159,8 @@ type
   Tile* = TileGid
 
   Chunk* = object
-    x*, y*: float, width*, height*: int
+    x*, y*: float
+    width*, height*: int
     tiles*: seq[Tile]
 
   HAlignment* {.pure.} = enum
@@ -537,7 +538,7 @@ proc buildTiles(buff: string, encoding: Encoding,
     const sz = sizeof(uint32)
 
     let
-      decoded = buff.decode().handleUncompress()
+      decoded = buff.strip().decode().handleUncompress()
       chrs = toSeq(decoded.items)
       length = (decoded.len() / sz).int
 
