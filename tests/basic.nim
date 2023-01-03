@@ -1,5 +1,5 @@
 import ../src/nim_tiled
-import unittest, print, options
+import unittest, options
 
 suite "finite maps":
   test "basic":

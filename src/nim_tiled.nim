@@ -1,5 +1,5 @@
 import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
-    print, sugar, sequtils, algorithm, tables, base64, zippy
+    sugar, sequtils, algorithm, tables, base64, zippy
 
 type
   LayerGid* = string

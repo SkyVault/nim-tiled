@@ -10,7 +10,6 @@ srcDir        = "src"
 
 requires "nim >= 0.18.0"
 requires "zippy"
-requires "print"
 
 task docs, "Compiles documentation":
   exec "nim doc --project --index:on --outdir:htmldocs src/nim_tiled.nim"

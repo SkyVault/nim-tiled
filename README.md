@@ -27,5 +27,7 @@ if res.isOk:
 
 ## Example using [Windy](https://github.com/treeform/windy), [Pixie](https://github.com/Vladar4/sdl2_nim) and [Boxy](https://github.com/treeform/boxy)
 
+Infinite Tilemap
+
 ```nim
 ```
