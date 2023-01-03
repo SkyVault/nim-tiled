@@ -159,7 +159,7 @@ type
   Tile* = TileGid
 
   Chunk* = object
-    x*, y*, width*, height*: float
+    x*, y*: float, width*, height*: int
     tiles*: seq[Tile]
 
   HAlignment* {.pure.} = enum
@@ -555,10 +555,10 @@ proc buildTiles(buff: string, encoding: Encoding,
 
 proc buildChunk(node: XmlNode, encoding: Encoding,
     compression: Compression): Chunk =
-  result.x = node.attr("x").parseFloat
-  result.y = node.attr("y").parseFloat
-  result.width = node.attr("width").parseFloat
-  result.height = node.attr("height").parseFloat
+  result.x = node.value("x", 0.0)
+  result.y = node.value("y", 0.0)
+  result.width = node.value("width", 0)
+  result.height = node.value("height", 0)
   result.tiles = node.innerText.buildTiles(encoding, compression)
 
 proc buildData(data: XmlNode): Data =
