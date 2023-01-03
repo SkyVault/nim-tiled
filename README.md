@@ -86,3 +86,5 @@ when isMainModule:
     window.swapBuffers()
     pollEvents()
 ```
+
+![Preview](screenshot.png)
