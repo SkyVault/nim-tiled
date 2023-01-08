@@ -31,7 +31,6 @@ type
     tiles*: seq[Tile]
     chunks*: seq[Chunk]
 
-
   PropKind* = enum
     boolProp
     colorProp
@@ -243,6 +242,7 @@ type
     axisY
 
   Map* = object
+    name: string # This is not part of the tiled spec but I find it useful to have so I can have a unique key for my map
     version, tiledversion, class: string
     orientation*: Orientation
     renderOrder*: RenderOrder
@@ -266,7 +266,7 @@ type
     firstGidToTilesetName: Table[TileGid, string]
 
 proc id*(it: Layer|Object|TilesetTile): auto = it.id
-proc name*(it: Layer|Object|Tileset|Wangset|Wangcolor): auto = it.name
+proc name*(it: Layer|Object|Tileset|Wangset|Wangcolor|Map): auto = it.name
 proc class*(it: Layer|Object|Map|Tileset|TilesetTile|Wangset|Wangcolor): auto = it.class
 
 proc version*(it: Tileset|Map): auto = it.version
@@ -534,7 +534,6 @@ proc buildTiles(buff: string, encoding: Encoding,
           data
 
   if encoding == Encoding.base64:
-    # TODO: Handle compression
     const sz = sizeof(uint32)
 
     let
@@ -702,6 +701,7 @@ proc buildLayer(node: XmlNode): Layer =
 
 proc buildTilemap(node: XmlNode, path: string): Map =
   result = Map()
+  result.name = extractFilename(path).replace(".tmx", "")
   result.version = node.attr "version"
   result.tiledVersion = node.attr "tiledversion"
   result.class = node.attr "class"

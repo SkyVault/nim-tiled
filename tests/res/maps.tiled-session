@@ -5,9 +5,9 @@
     },
     "activeFile": "maps/finite-csv-30x20.tmx",
     "expandedProjectPaths": [
-        ".",
+        "maps",
         "tilesets",
-        "maps"
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -31,24 +31,24 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 230,
-                "y": 185
+                "x": 537.6666666666665,
+                "y": 248.99999999999997
             }
         },
         "maps/infinite-csv-multiple-tilesets.tmx": {
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 127.5,
-                "y": 127.625
+                "x": 252.375,
+                "y": 156.375
             }
         },
         "maps/infinite-csv.tmx": {
             "scale": 0.25,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 132,
-                "y": 514
+                "x": 2126,
+                "y": 970
             }
         },
         "maps/objects.tmx": {

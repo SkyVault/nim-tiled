@@ -65,6 +65,9 @@ suite "encodings":
     for i in 0..<9:
       check a.layers[0].tileAt(i) == b.layers[0].tileAt(i)
 
+  test "bigger test":
+    echo loadTiledMap("tests/res/maps/TestArea.tmx").orDefault
+
 suite "compression":
   test "we can load zlib compressed data":
     let a = loadTiledMap("tests/res/maps/zlib-compression.tmx").orDefault
