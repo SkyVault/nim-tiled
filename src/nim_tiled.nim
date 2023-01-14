@@ -269,6 +269,9 @@ proc id*(it: Layer|Object|TilesetTile): auto = it.id
 proc name*(it: Layer|Object|Tileset|Wangset|Wangcolor|Map): auto = it.name
 proc class*(it: Layer|Object|Map|Tileset|TilesetTile|Wangset|Wangcolor): auto = it.class
 
+proc `name=`*(it: var Map, to: string) =
+  it.name = to
+
 proc version*(it: Tileset|Map): auto = it.version
 proc tiledversion*(it: Tileset|Map): auto = it.tiledversion
 
