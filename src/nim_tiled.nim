@@ -537,7 +537,7 @@ proc buildTiles(buff: string, encoding: Encoding,
     const sz = sizeof(uint32)
 
     let
-      decoded = buff.strip().decode().handleUncompress()
+      decoded = buff.decode().handleUncompress()
       chrs = toSeq(decoded.items)
       length = (decoded.len() / sz).int
 
