@@ -370,8 +370,11 @@ proc buildTileLayer*(x, y: float, width, height: int, infinite = false): Layer =
           height), chunks: @[]),
     properties: {"background": Prop(kind: boolProp, boolean: true)}.toTable)
 
-proc buildProperties(props: XmlNode): Properties =
+proc buildProperties*(props: XmlNode): Properties =
   collect(for p in props: (p.attr("name"), buildProp(p))).toTable
+
+proc buildProperties*(props: openArray[(string, Prop)]): Properties =
+  collect(for p in props: (p[0], p[1])).toTable
 
 proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
