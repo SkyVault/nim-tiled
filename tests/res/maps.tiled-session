@@ -24,30 +24,30 @@
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 37.63636363636364,
-                "y": 33.545454545454554
+                "y": 33.72727272727272
             }
         },
         "maps/finite-csv-30x20.tmx": {
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 537.6666666666665,
-                "y": 248.99999999999997
+                "x": 335.33333333333326,
+                "y": 172.33333333333334
             }
         },
         "maps/infinite-csv-multiple-tilesets.tmx": {
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 252.375,
-                "y": 156.375
+                "x": 128,
+                "y": 127.875
             }
         },
         "maps/infinite-csv.tmx": {
             "scale": 0.25,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 2126,
+                "x": 2128,
                 "y": 970
             }
         },
@@ -119,7 +119,7 @@
         "maps/infinite-csv-multiple-tilesets.tmx"
     ],
     "project": "maps.tiled-project",
-    "property.type": "file",
+    "property.type": "bool",
     "recentFiles": [
         "tilesets/tileset.tsx",
         "maps/infinite-csv-multiple-tilesets.tmx",

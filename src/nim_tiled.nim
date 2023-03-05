@@ -48,7 +48,7 @@ type
       of objectProp: objectValue*: string
       of stringProp: str*: string
 
-  Properties* = seq[Prop]
+  Properties* = Table[string, Prop]
 
   Frame* = object
     tileid*: Tile
@@ -357,8 +357,21 @@ proc buildProp(prop: XmlNode): Prop =
       of "": Prop(kind: stringProp, str: prop.attr("value"))
       else: Prop()
 
+proc buildTileLayer*(x, y: float, width, height: int, infinite = false): Layer =
+  result = Layer(
+    kind: tiles,
+    width: width,
+    height: height,
+    x: x,
+    y: y,
+    data:
+    if infinite: Data(encoding: none, compression: none, tiles: @[], chunks: @[])
+      else: Data(encoding: none, compression: none, tiles: newSeq[Tile](width *
+          height), chunks: @[]),
+    properties: {"background": Prop(kind: boolProp, boolean: true)}.toTable)
+
 proc buildProperties(props: XmlNode): Properties =
-  for p in props: result.add buildProp(p)
+  collect(for p in props: (p.attr("name"), buildProp(p))).toTable
 
 proc buildImage(node: XmlNode): Image =
   result.format = node.attr("format")
