@@ -60,7 +60,7 @@ type
     name, class, color*: string
     tile*: Tile
     probability*: Percent
-    properties: Properties
+    properties*: Properties
 
   Wangtile* = object
     tileid*: TileGid
@@ -148,7 +148,7 @@ type
     objectAlignment*: ObjectAlignment
     tileRenderSize*: TileRenderSize
     fillMode*: FillMode
-    tiles: seq[TilesetTile]
+    tiles*: seq[TilesetTile]
     image*: Option[Image]
     grid*: Option[Grid]
     properties*: Properties
@@ -611,7 +611,7 @@ proc buildData(data: XmlNode): Data =
           result.compression)
 
 proc loadTextFields(text: var Object, node: XmlNode) =
-  text.kind = text
+  text = Object(kind: text)
   text.pixelsize = node.value("pixelsize", 0)
   text.wrap = node.value("wrap", false)
   text.color = node.attr("color")
@@ -636,6 +636,24 @@ proc loadTextFields(text: var Object, node: XmlNode) =
   text.text = node.innerText
 
 proc buildObject(node: XmlNode): Object =
+  for child in node:
+    case child.tag
+      of "properties": result.properties = buildProperties(child)
+      of "ellipse":
+        result = Object(kind: ellipse)
+      of "point":
+        result = Object(kind: point)
+      of "polygon":
+        result = Object(kind: polygon)
+        result.points = child.attr("points").extractPoints()
+      of "polyline":
+        result = Object(kind: polyline)
+        result.points = child.attr("points").extractPoints()
+      of "text":
+        result.loadTextFields(child)
+      else:
+        echo "Unexpected tag for object child: " & child.tag
+
   result.id = node.value("id", 0)
   result.name = node.attr("name")
   result.class = node.attr("class")
@@ -647,26 +665,6 @@ proc buildObject(node: XmlNode): Object =
   result.gid = node.value("gid", 0)
   result.visible = if node.attr("visible") == "": true else: node.value(
       "visible", true)
-
-  # TODO: handle template file
-
-  for child in node:
-    case child.tag
-      of "properties": result.properties = buildProperties(child)
-      of "ellipse": result.kind = ellipse
-      of "point": result.kind = point
-      of "polygon":
-        result.kind = polygon
-        result.points = child.attr("points").extractPoints()
-
-      of "polyline":
-        result.kind = polyline
-        result.points = child.attr("points").extractPoints()
-
-      of "text":
-        result.loadTextFields(child)
-
-      else: echo "Unexpected tag for object child: " & child.tag
 
 proc loadBasicLayerFields(layer: var Layer, node: XmlNode) =
   layer.id = node.attr("id")
@@ -685,7 +683,7 @@ proc loadBasicLayerFields(layer: var Layer, node: XmlNode) =
   layer.parallaxy = node.value("parallaxy", 0.0)
 
 proc buildObjectGroup(node: XmlNode): Layer =
-  result.kind = objects
+  result = Layer(kind: objects)
   loadBasicLayerFields(result, node)
 
   result.color = node.attr("color")
