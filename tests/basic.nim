@@ -30,23 +30,23 @@ suite "finite maps":
     let result = loadTiledMap("tests/res/maps/properties.tmx").orDefault
 
     let props = result.properties
-    check props["boolean"].kind == boolProp
-    check props["boolean"].kind == boolProp and props["boolean"].boolean == true
+    check props["boolean"].kind == BoolProp
+    check props["boolean"].kind == BoolProp and props["boolean"].boolean == true
 
-    check props["color property"].kind == colorProp
-    check props["color property"].kind == colorProp and props["color property"].color == "#ffff557f"
+    check props["color property"].kind == ColorProp
+    check props["color property"].kind == ColorProp and props["color property"].color == "#ffff557f"
 
-    check props["file path"].kind == fileProp
-    check props["file path"].kind == fileProp and props["file path"].path == "finite-csv-30x20.tmx"
+    check props["file path"].kind == FileProp
+    check props["file path"].kind == FileProp and props["file path"].path == "finite-csv-30x20.tmx"
 
-    check props["float test"].kind == floatProp
-    check props["float test"].kind == floatProp and props["float test"].number == 3.1415926
+    check props["float test"].kind == FloatProp
+    check props["float test"].kind == FloatProp and props["float test"].number == 3.1415926
 
-    check props["object test"].kind == objectProp
-    check props["object test"].kind == objectProp and props["object test"].objectValue == "0"
+    check props["object test"].kind == ObjectProp
+    check props["object test"].kind == ObjectProp and props["object test"].objectValue == "0"
 
-    check props["string test"].kind == stringProp
-    check props["string test"].kind == stringProp and props["string test"].str == "This is a string"
+    check props["string test"].kind == StringProp
+    check props["string test"].kind == StringProp and props["string test"].str == "This is a string"
 
   test "objects":
     discard loadTiledMap("tests/res/maps/objects.tmx").orDefault

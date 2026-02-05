@@ -14,39 +14,39 @@ type
     orientation: Orientation
     width, height: float
 
-  Encoding* {.pure.} = enum
-    none
-    base64
-    csv
+  Encoding* = enum
+    NoEncoding
+    Base64
+    Csv
 
-  Compression* {.pure.} = enum
-    none
-    gzip
-    zlib
-    zstd
+  Compression* = enum
+    NoCompression
+    Gzip
+    Zlib
+    Zstd
 
   Data* = object
-    encoding*: Encoding = none
-    compression*: Compression = none
+    encoding*: Encoding = NoEncoding
+    compression*: Compression = NoCompression
     tiles*: seq[Tile]
     chunks*: seq[Chunk]
 
   PropKind* = enum
-    boolProp
-    colorProp
-    fileProp
-    floatProp
-    objectProp
-    stringProp
+    BoolProp
+    ColorProp
+    FileProp
+    FloatProp
+    ObjectProp
+    StringProp
 
   Prop* = object
     case kind*: PropKind
-      of boolProp: boolean*: bool
-      of colorProp: color*: string
-      of fileProp: path*: string
-      of floatProp: number*: float
-      of objectProp: objectValue*: string
-      of stringProp: str*: string
+      of BoolProp: boolean*: bool
+      of ColorProp: color*: string
+      of FileProp: path*: string
+      of FloatProp: number*: float
+      of ObjectProp: objectValue*: string
+      of StringProp: str*: string
 
   Properties* = Table[string, Prop]
 
@@ -102,37 +102,37 @@ type
     data*: Option[Data]
     transformations*: Option[Transformations]
 
-  RenderOrder* {.pure.} = enum
-    rightDown
-    rightUp
-    leftDown
-    leftUp
+  RenderOrder* = enum
+    RightDown
+    RightUp
+    LeftDown
+    LeftUp
 
-  Orientation* {.pure.} = enum
-    orthogonal
-    orthographic
-    isometric
-    staggered
-    hexagonal
+  Orientation* = enum
+    Orthogonal
+    Orthographic
+    Isometric
+    Staggered
+    Hexagonal
 
-  ObjectAlignment* {.pure.} = enum
-    unspecified
-    topLeft
-    top
-    topRight
-    center
-    right
-    bottomLeft
-    bottom
-    bottomRight
+  ObjectAlignment* = enum
+    Unspecified
+    TopLeft
+    Top
+    TopRight
+    Center
+    Right
+    BottomLeft
+    Bottom
+    BottomRight
 
-  TileRenderSize* {.pure.} = enum
-    tile
-    grid
+  TileRenderSize* = enum
+    TileSize
+    GridSize
 
-  FillMode* {.pure.} = enum
-    stretch
-    preserveAspectFit
+  FillMode* = enum
+    Stretch
+    PreserveAspectFit
 
   Tileset* = object
     version, tiledversion: string
@@ -162,19 +162,19 @@ type
     width*, height*: int
     tiles*: seq[Tile]
 
-  HAlignment* {.pure.} = enum
-    left, center, right, justify
+  HAlignment* = enum
+    Left, Center, Right, Justify
 
-  VAlignment* {.pure.} = enum
-    top, center, bottom
+  VAlignment* = enum
+    Top, Center, Bottom
 
-  ObjectKind* {.pure.} = enum
-    obj
-    ellipse
-    point
-    polygon
-    polyline
-    text
+  ObjectKind* = enum
+    Obj
+    Ellipse
+    Point
+    Polygon
+    Polyline
+    Text
 
   Object* = object
     id: int
@@ -187,12 +187,12 @@ type
     properties*: Properties
 
     case kind*: ObjectKind
-      of obj: discard
-      of ellipse: discard
-      of point: discard
-      of polygon, polyline:
+      of Obj: discard
+      of Ellipse: discard
+      of Point: discard
+      of Polygon, Polyline:
         points*: seq[Vec2]
-      of text:
+      of Text:
         text*: string
         fontfamily*: string
         pixelsize*: int
@@ -202,14 +202,14 @@ type
         valign*: VAlignment
 
   DrawOrder* = enum
-    topdown
-    index
+    Topdown
+    Index
 
   LayerKind* = enum
-    tiles
-    objects
-    image
-    group
+    Tiles
+    Objects
+    ImageLayer
+    Group
 
   Layer* = object
     id: LayerGid
@@ -225,21 +225,21 @@ type
     properties*: Properties
 
     case kind*: LayerKind
-      of tiles:
+      of Tiles:
         data*: Data
-      of objects:
+      of Objects:
         objects*: seq[Object]
         color*: string
-        drawOrder*: DrawOrder = topdown
-      of image:
+        drawOrder*: DrawOrder = Topdown
+      of ImageLayer:
         repeatx, repeaty: bool
         image*: Option[Image]
-      of group:
+      of Group:
         layers*: seq[Layer]
 
   Axis* = enum
-    axisX
-    axisY
+    AxisX
+    AxisY
 
   Map* = object
     name: string # This is not part of the tiled spec but I find it useful to have so I can have a unique key for my map
@@ -280,11 +280,11 @@ proc source*(it: Tileset): auto = it.source
 proc toPercent(v: float): Percent = Percent((v * 100.0).int)
 
 func tileAt*(layer: Layer, x, y: int): Tile =
-  if layer.kind == tiles:
+  if layer.kind == Tiles:
     result = layer.data.tiles[x + y * layer.width]
 
 func tileAt*(layer: Layer, index: int): Tile =
-  if layer.kind == tiles:
+  if layer.kind == Tiles:
     result = layer.data.tiles[index]
 
 const
@@ -297,7 +297,6 @@ func tileValue*(gid: TileGid): int {.inline.} = (gid.uint32 and ValueMask).int
 func hflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipHorizontal) != 0
 func vflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipVertical) != 0
 func dflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipDiagonal) != 0
-
 
 ## Utility functions
 
@@ -349,26 +348,29 @@ proc tilesetForTileId*(map: Map, tileId: Tile): TileGid =
 proc buildProp(prop: XmlNode): Prop =
   result =
     case prop.attr("type")
-      of "bool": Prop(kind: boolProp, boolean: prop.attr("value") == "true")
-      of "color": Prop(kind: colorProp, color: prop.attr("value"))
-      of "file": Prop(kind: fileProp, path: prop.attr("value"))
-      of "float": Prop(kind: floatProp, number: prop.attr("value").parseFloat)
-      of "object": Prop(kind: objectProp, objectValue: prop.attr("value"))
-      of "": Prop(kind: stringProp, str: prop.attr("value"))
+      of "bool": Prop(kind: BoolProp, boolean: prop.attr("value") == "true")
+      of "color": Prop(kind: ColorProp, color: prop.attr("value"))
+      of "file": Prop(kind: FileProp, path: prop.attr("value"))
+      of "float": Prop(kind: FloatProp, number: prop.attr("value").parseFloat)
+      of "object": Prop(kind: ObjectProp, objectValue: prop.attr("value"))
+      of "": Prop(kind: StringProp, str: prop.attr("value"))
       else: Prop()
 
 proc buildTileLayer*(x, y: float, width, height: int, infinite = false): Layer =
+  let data = 
+    if infinite: 
+      Data(encoding: NoEncoding, compression: NoCompression, tiles: @[], chunks: @[])
+    else: 
+      Data(encoding: NoEncoding, compression: NoCompression, tiles: newSeq[Tile](width *
+          height), chunks: @[])
   result = Layer(
-    kind: tiles,
+    kind: Tiles,
     width: width,
     height: height,
     x: x,
     y: y,
-    data:
-    if infinite: Data(encoding: none, compression: none, tiles: @[], chunks: @[])
-      else: Data(encoding: none, compression: none, tiles: newSeq[Tile](width *
-          height), chunks: @[]),
-    properties: {"background": Prop(kind: boolProp, boolean: true)}.toTable)
+    data: data,
+    properties: {"background": Prop(kind: BoolProp, boolean: true)}.toTable)
 
 proc buildProperties*(props: XmlNode): Properties =
   collect(for p in props: (p.attr("name"), buildProp(p))).toTable
@@ -471,28 +473,28 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   tileset.columns = node.value("columns", 0)
   tileset.objectAlignment =
     case node.attr("objectalignment"):
-      of "unspecified": unspecified
-      of "topleft": topLeft
-      of "top": top
-      of "topright": topRight
-      of "center": center
-      of "right": right
-      of "bottomleft": bottomLeft
-      of "bottom": bottom
-      of "bottomright": bottomRight
-      else: unspecified
+      of "unspecified": Unspecified
+      of "topleft": TopLeft
+      of "top": Top
+      of "topright": TopRight
+      of "center": Center
+      of "right": Right
+      of "bottomleft": BottomLeft
+      of "bottom": Bottom
+      of "bottomright": BottomRight
+      else: Unspecified
 
   tileset.tileRenderSize =
     case node.attr("tilerendersize")
-      of "tile": tile
-      of "grid": grid
-      else: tile
+      of "tile": TileSize
+      of "grid": GridSize
+      else: TileSize
 
   tileset.fillMode =
     case node.attr("fillmode")
-      of "stretch": stretch
-      of "preserve-aspect-fit": preserveAspectFit
-      else: stretch
+      of "stretch": Stretch
+      of "preserve-aspect-fit": PreserveAspectFit
+      else: Stretch
 
   for child in node:
     case child.tag
@@ -504,9 +506,9 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
         var grid = Grid()
         grid.orientation =
           case child.attr("orientation")
-            of "orthogonal": orthogonal
-            of "isometric": isometric
-            else: orthogonal
+            of "orthogonal": Orthogonal
+            of "isometric": Isometric
+            else: Orthogonal
         grid.width = child.value("width", 0.0)
         grid.height = child.value("height", 0.0)
         tileset.grid = some grid
@@ -542,17 +544,17 @@ proc buildTiles(buff: string, encoding: Encoding,
   proc handleUncompress(data: string): string =
     result =
       case compression
-        of none: data
-        of gzip: uncompress(data, dfGzip)
-        of zlib: uncompress(data, dfZlib)
-        of zstd:
+        of NoCompression: data
+        of Gzip: uncompress(data, dfGzip)
+        of Zlib: uncompress(data, dfZlib)
+        of Zstd:
           # TODO: Look into supporting zstd compression by using this library:
           # https://github.com/wltsmrz/nim_zstd
           # optionally we could provide a hook so that you could pass in any uncompress function.
           echo "Error unsupported compression (ZSTD)"
           data
 
-  if encoding == Encoding.base64:
+  if encoding == Base64:
     const sz = sizeof(uint32)
 
     let
@@ -582,16 +584,16 @@ proc buildChunk(node: XmlNode, encoding: Encoding,
 
 proc buildData(data: XmlNode): Data =
   case data.attr("encoding")
-    of "base64": result.encoding = base64
-    of "csv": result.encoding = csv
+    of "base64": result.encoding = Base64
+    of "csv": result.encoding = Csv
     else:
       let en = data.attr("encoding")
       echo &"Unexpected encoding '{en}' for data."
 
   case data.attr("compression"):
-    of "gzip": result.compression = gzip
-    of "zlib": result.compression = zlib
-    of "zstd": result.compression = zstd
+    of "gzip": result.compression = Gzip
+    of "zlib": result.compression = Zlib
+    of "zstd": result.compression = Zstd
     else: discard
 
   var hasChunk = false
@@ -611,7 +613,7 @@ proc buildData(data: XmlNode): Data =
           result.compression)
 
 proc loadTextFields(text: var Object, node: XmlNode) =
-  text = Object(kind: text)
+  text = Object(kind: Text)
   text.pixelsize = node.value("pixelsize", 0)
   text.wrap = node.value("wrap", false)
   text.color = node.attr("color")
@@ -622,17 +624,17 @@ proc loadTextFields(text: var Object, node: XmlNode) =
   text.kerning = node.value("kerning", true)
   text.halign =
     case node.attr("halign")
-      of "left": left
-      of "center": center
-      of "right": right
-      of "justify": justify
-      else: left
+      of "left": Left
+      of "center": Center
+      of "right": Right
+      of "justify": Justify
+      else: Left
   text.valign =
     case node.attr("valign")
-      of "top": top
-      of "center": center
-      of "bottom": bottom
-      else: top
+      of "top": Top
+      of "center": Center
+      of "bottom": Bottom
+      else: Top
   text.text = node.innerText
 
 proc buildObject(node: XmlNode): Object =
@@ -640,14 +642,14 @@ proc buildObject(node: XmlNode): Object =
     case child.tag
       of "properties": result.properties = buildProperties(child)
       of "ellipse":
-        result = Object(kind: ellipse)
+        result = Object(kind: Ellipse)
       of "point":
-        result = Object(kind: point)
+        result = Object(kind: Point)
       of "polygon":
-        result = Object(kind: polygon)
+        result = Object(kind: Polygon)
         result.points = child.attr("points").extractPoints()
       of "polyline":
-        result = Object(kind: polyline)
+        result = Object(kind: Polyline)
         result.points = child.attr("points").extractPoints()
       of "text":
         result.loadTextFields(child)
@@ -683,15 +685,15 @@ proc loadBasicLayerFields(layer: var Layer, node: XmlNode) =
   layer.parallaxy = node.value("parallaxy", 0.0)
 
 proc buildObjectGroup(node: XmlNode): Layer =
-  result = Layer(kind: objects)
+  result = Layer(kind: Objects)
   loadBasicLayerFields(result, node)
 
   result.color = node.attr("color")
   result.drawOrder =
     case node.attr("draworder")
-      of "index": index
-      of "topdown": topdown
-      else: topdown
+      of "index": Index
+      of "topdown": Topdown
+      else: Topdown
 
   for child in node:
     case child.tag
@@ -704,7 +706,7 @@ proc buildObjectGroup(node: XmlNode): Layer =
         discard
 
 proc buildLayer(node: XmlNode): Layer =
-  result.kind = tiles
+  result.kind = Tiles
   loadBasicLayerFields(result, node)
 
   for subNode in node:
@@ -732,20 +734,20 @@ proc buildTilemap(node: XmlNode, path: string): Map =
 
   result.orientation =
     case node.attr("orientation"):
-      of "orthogonal": orthogonal
-      of "orthographic": orthographic
-      of "isometric": isometric
-      of "staggered": staggered
-      of "hexagonal": hexagonal
-      else: orthogonal
+      of "orthogonal": Orthogonal
+      of "orthographic": Orthographic
+      of "isometric": Isometric
+      of "staggered": Staggered
+      of "hexagonal": Hexagonal
+      else: Orthogonal
 
   result.renderOrder =
     case node.attr("renderorder"):
-      of "right-down": rightDown
-      of "right-up": leftDown
-      of "left-up": rightUp
-      of "left-down": leftUp
-      else: rightDown
+      of "right-down": RightDown
+      of "right-up": LeftDown
+      of "left-up": RightUp
+      of "left-down": LeftUp
+      else: RightDown
 
   result.nextLayerId = node.attr("nextlayerid")
   result.nextObjectid = node.attr("nextobjectid")
