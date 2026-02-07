@@ -1,0 +1,43 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "demo.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "/home/dneumann/Workspace/res/tilesheets/tilesheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "concrete.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 5.5
+        },
+        "demo.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 206.33333333333337,
+                "y": 316
+            }
+        }
+    },
+    "last.imagePath": "/home/dneumann/Workspace/res/tilesheets",
+    "map.fixedSize": false,
+    "map.lastUsedFormat": "tmx",
+    "map.layerDataFormat": "1",
+    "openFiles": [
+        "demo.tmx"
+    ],
+    "project": "capital-city.tiled-project",
+    "recentFiles": [
+        "/home/dneumann/Workspace/res/tilesheets/tilesheet.tsx",
+        "demo.tmx",
+        "concrete.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}
