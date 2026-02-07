@@ -731,7 +731,7 @@ proc buildObjectGroup(node: XmlNode): Layer =
         discard
 
 proc buildLayer(node: XmlNode): Layer =
-  result.kind = Tiles
+  result = Layer(kind: Tiles)
   loadBasicLayerFields(result, node)
 
   for subNode in node:
