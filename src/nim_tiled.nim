@@ -1,7 +1,11 @@
 import os, options, xmlparser, xmltree, streams, strformat, strutils, colors,
     sugar, sequtils, algorithm, tables, base64, zippy
 
+{.push raises: [], gcsafe.}
+
 type
+  TiledError* = object of CatchableError
+
   LayerGid* = string
   TileGid* = int
   ObjectGid* = string
@@ -302,20 +306,29 @@ func dflip*(gid: TileGid): bool {.inline.} = (gid.uint32 and FlipDiagonal) != 0
 
 proc extractPoints*(text: string): seq[tuple[x, y: float]] =
   ## extract points ala: 0,0 32,29 0,29
-  result = collect:
-    for pair in text.split {' '}:
-      let coords = pair.split {','}
-      (coords[0].parseFloat, coords[1].parseFloat)
+  try:
+    result = collect:
+      for pair in text.split {' '}:
+        let coords = pair.split {','}
+        (coords[0].parseFloat, coords[1].parseFloat)
+  except ValueError:
+    return
 
 proc value[T](self: XmlNode, a: string, v: T): T =
   result = v
 
   when T is int:
     if self.attr(a) != "":
-      return self.attr(a).parseInt()
+      try:
+        return self.attr(a).parseInt()
+      except:
+        return
   elif T is float:
     if self.attr(a) != "":
-      return self.attr(a).parseFloat()
+      try:
+        return self.attr(a).parseFloat()
+      except:
+        return
     else:
       return 0.0
   elif T is bool:
@@ -346,15 +359,18 @@ proc tilesetForTileId*(map: Map, tileId: Tile): TileGid =
 ## Builders
 
 proc buildProp(prop: XmlNode): Prop =
-  result =
-    case prop.attr("type")
-      of "bool": Prop(kind: BoolProp, boolean: prop.attr("value") == "true")
-      of "color": Prop(kind: ColorProp, color: prop.attr("value"))
-      of "file": Prop(kind: FileProp, path: prop.attr("value"))
-      of "float": Prop(kind: FloatProp, number: prop.attr("value").parseFloat)
-      of "object": Prop(kind: ObjectProp, objectValue: prop.attr("value"))
-      of "": Prop(kind: StringProp, str: prop.attr("value"))
-      else: Prop()
+  try:
+    result =
+      case prop.attr("type")
+        of "bool": Prop(kind: BoolProp, boolean: prop.attr("value") == "true")
+        of "color": Prop(kind: ColorProp, color: prop.attr("value"))
+        of "file": Prop(kind: FileProp, path: prop.attr("value"))
+        of "float": Prop(kind: FloatProp, number: prop.attr("value").parseFloat)
+        of "object": Prop(kind: ObjectProp, objectValue: prop.attr("value"))
+        of "": Prop(kind: StringProp, str: prop.attr("value"))
+        else: Prop()
+  except:
+    return
 
 proc buildTileLayer*(x, y: float, width, height: int, infinite = false): Layer =
   let data = 
@@ -408,7 +424,8 @@ proc buildWangcolor(node: XmlNode): Wangcolor =
 
 proc buildWangtile(node: XmlNode): Wangtile =
   result.tileid = Tile(node.value("tileid", 0))
-  result.wangid = node.attr("wangid").split({','}).map it => Tile(it.parseInt)
+  result.wangid = node.attr("wangid").split({','}).map it => Tile(try: it.parseInt except: 0)
+
   # NOTE: just realized that these are removed as of Tiled 1.5,
   # we'll keep them in for backward compatibility... for now
   result.hflip = node.value("hflip", false)
@@ -460,7 +477,7 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
   if tileset.firstGid == 0:
     tileset.firstGid =
       if node.attr("firstgid") == "": 1
-      else: node.attr("firstgid").parseInt
+      else: (try: node.attr("firstgid").parseInt except: 0)
 
   tileset.source = node.attr("source")
   tileset.name = node.attr("name")
@@ -527,14 +544,17 @@ proc loadTilesetFields(tileset: var Tileset, node: XmlNode) =
 proc buildTileset(node: XmlNode, path: string, loadsource = true): Tileset =
   result.firstGid =
     if node.attr("firstgid") == "": 1
-    else: node.attr("firstgid").parseInt
+    else: (try: node.attr("firstgid").parseInt except: 0)
 
   result.source = node.attr("source")
 
   if result.source != "" and loadsource:
-    let tilesetNode = readFile(path.parentDir().joinPath(
-        result.source)).newStringStream().parseXml()
-    result.loadTilesetFields(tilesetNode)
+    try:
+      let tilesetNode = readFile(
+        path.parentDir().joinPath(result.source)).newStringStream().parseXml()
+      result.loadTilesetFields(tilesetNode)
+    except:
+      discard
   else:
     result.loadTilesetFields(node)
 
@@ -542,37 +562,42 @@ proc buildTiles(buff: string, encoding: Encoding,
     compression: Compression): seq[Tile] =
 
   proc handleUncompress(data: string): string =
-    result =
-      case compression
-        of NoCompression: data
-        of Gzip: uncompress(data, dfGzip)
-        of Zlib: uncompress(data, dfZlib)
-        of Zstd:
-          # TODO: Look into supporting zstd compression by using this library:
-          # https://github.com/wltsmrz/nim_zstd
-          # optionally we could provide a hook so that you could pass in any uncompress function.
-          echo "Error unsupported compression (ZSTD)"
-          data
+    try:
+      result =
+        case compression
+          of NoCompression: data
+          of Gzip: uncompress(data, dfGzip)
+          of Zlib: uncompress(data, dfZlib)
+          of Zstd:
+            # TODO: Look into supporting zstd compression by using this library:
+            # https://github.com/wltsmrz/nim_zstd
+            # optionally we could provide a hook so that you could pass in any uncompress function.
+            echo "Error unsupported compression (ZSTD)"
+            data
+    except:
+      echo getCurrentExceptionMsg()
 
   if encoding == Base64:
     const sz = sizeof(uint32)
-
-    let
-      decoded = buff.decode().handleUncompress()
-      chrs = toSeq(decoded.items)
-      length = (decoded.len() / sz).int
-
-    for i in 0..<length:
+    try:
       let
-        r = chrs[i*sz+0].uint8
-        g = chrs[i*sz+1].uint8
-        b = chrs[i*sz+2].uint8
-        a = chrs[i*sz+3].uint8
-        id: uint32 = (a shl 24) or (b shl 16) or (g shl 8) or r
-
-      result.add(Tile(id))
+        decoded = buff.decode().handleUncompress()
+        chrs = toSeq(decoded.items)
+        length = (decoded.len() / sz).int
+      
+      for i in 0..<length:
+        let
+          r = chrs[i*sz+0].uint8
+          g = chrs[i*sz+1].uint8
+          b = chrs[i*sz+2].uint8
+          a = chrs[i*sz+3].uint8
+          id: uint32 = (a shl 24) or (b shl 16) or (g shl 8) or r
+      
+        result.add(Tile(id))
+    except:
+      discard
   else:
-    return buff.split({',', '\n'}).filterIt(it != "").map it => Tile(parseInt(it))
+    return buff.split({',', '\n'}).filterIt(it != "").map it => Tile(try: parseInt(it) except: 0)
 
 proc buildChunk(node: XmlNode, encoding: Encoding,
     compression: Compression): Chunk =
@@ -726,11 +751,14 @@ proc buildTilemap(node: XmlNode, path: string): Map =
   result.class = node.attr "class"
 
   result.infinite = node.attr("infinite") == "1"
-
-  result.width = node.attr("width").parseInt
-  result.height = node.attr("width").parseInt
-  result.tilewidth = node.attr("tilewidth").parseInt
-  result.tileheight = node.attr("tileheight").parseInt
+  
+  try:
+    result.width = node.attr("width").parseInt
+    result.height = node.attr("height").parseInt
+    result.tilewidth = node.attr("tilewidth").parseInt
+    result.tileheight = node.attr("tileheight").parseInt
+  except:
+    echo getCurrentExceptionMsg()
 
   result.orientation =
     case node.attr("orientation"):
@@ -773,45 +801,20 @@ proc buildTilemap(node: XmlNode, path: string): Map =
     result.firstGidToTilesetName[tileset.firstGid] = tileset.name
 
 proc getTilesetNameGivenFirstGid*(map: Map, uid: TileGid): string =
-  map.firstGidToTilesetName[uid]
+  (try: map.firstGidToTilesetName[uid] except: "")
 
-type
-  LoadResultKind = enum
-    tiledOk
-    tiledError
-
-  LoadErrorKind = enum
-    fileNotFound
-
-  LoadResult = object
-    case kind: LoadResultKind
-      of tiledOk:
-        tiledMap*: Map
-      of tiledError:
-        errorMessage*: string
-
-proc kind*(res: LoadResult): LoadResultKind =
-  res.kind
-
-func isOk*(res: LoadResult): bool = res.kind == tiledOk
-
-proc orDefault*(res: LoadResult): Map =
-  if res.kind == tiledOk:
-    result = res.tiledMap
-  else:
-    echo res.errorMessage
-
-proc errorResult(kind: LoadErrorKind, message: string): LoadResult =
-  result = LoadResult(kind: tiledError, errorMessage: message)
-
-proc loadTiledMap*(path: string): LoadResult =
+proc loadTiledMap*(stream: Stream, path: string): Map {.raises: [TiledError].} =
+  try:
+    result = buildTilemap(stream.parseXml(), path) 
+  except:
+    raise TiledError.newException(getCurrentExceptionMsg())
+ 
+proc loadTiledMap*(path: string): Map {.raises: [TiledError].} =
   if not fileExists(path):
-    return errorResult(fileNotFound, "File does not exist.")
+    raise TiledError.newException("Tilemap not found at: " & path)
+  try:
+    result = openFileStream(path).loadTiledMap(path)
+  except:
+    raise TiledError.newException(getCurrentExceptionMsg())
 
-  result = LoadResult(
-    kind: tiledOk,
-    tiledMap: buildTilemap(
-      readFile(path).newStringStream().parseXml(),
-      path
-    )
-  )
+{.pop.}
