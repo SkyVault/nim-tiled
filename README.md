@@ -3,22 +3,22 @@
 
 ## Introduction
 
-A tiled map loader for the [Nim](nim-lang.org) programming language. The Tiled map editor can be found [here](https://www.mapeditor.org/).
+A tiled map loader for the [Nim](https://nim-lang.org) programming language. The Tiled map editor can be found [here](https://www.mapeditor.org/).
 Documentation for the tiled file format can be found [here](https://doc.mapeditor.org/en/stable/).
 
 Example
 
 ```nim
-echo "Loaded the tiled map: ", loadTiledMap("tilemap.tmx").orDefault
+echo "Loaded the tiled map: ", loadTiledMap("tilemap.tmx")
 ```
 
 Example with error handling
 
 ```nim
-let res = loadTiledMap("tilemap.tmx")
-
-if res.isOk:
-  echo "Loaded the tiled map: ", res.tiledMap
+try:
+  let res = loadTiledMap("tilemap.tmx")
+except TiledError as e:
+  stderr.writeLine(e.msg)  
 ```
 
 ## Documentation
@@ -42,7 +42,7 @@ when isMainModule:
   var bxy = newBoxy()
 
   let
-    tiledMap = loadTiledMap("res/TestArea.tmx").orDefault
+    tiledMap = loadTiledMap("res/TestArea.tmx")
     tileset = tiledMap.tilesets[0]
     tilesetImage = readImage("res".joinPath tileset.image.get().source)
 
@@ -66,7 +66,7 @@ when isMainModule:
     bxy.beginFrame(window.size)
 
     for layer in tiledMap.layers:
-      if layer.kind == tiles:
+      if layer.kind == Tiles:
         for chunk in layer.data.chunks:
           for x in 0..<chunk.width.int:
             for y in 0..<chunk.height.int:
